@@ -8,13 +8,30 @@
   "rank": {
     "tier": "EMERALD",
     "rank": "I",
-    "lp": 22,
-    "wins": 119,
+    "lp": 43,
+    "wins": 120,
     "losses": 114,
     "hotStreak": true,
     "veteran": false
   },
   "matches": [
+    {
+      "matchId": "EUW1_7842755800",
+      "gameCreation": 1777924999443,
+      "date": "2026-05-04T20:03:19.443Z",
+      "champ": "Gnar",
+      "result": "W",
+      "kills": 7,
+      "deaths": 1,
+      "assists": 9,
+      "cs": 284,
+      "duration": "31:58",
+      "durationSec": 1918,
+      "role": "TOP",
+      "visionScore": 30,
+      "damageDealt": 32945,
+      "goldEarned": 15780
+    },
     {
       "matchId": "EUW1_7842608390",
       "gameCreation": 1777923109053,
@@ -405,25 +422,8 @@
       "visionScore": 23,
       "damageDealt": 31496,
       "goldEarned": 12181
-    },
-    {
-      "matchId": "EUW1_7832844037",
-      "gameCreation": 1777153891678,
-      "date": "2026-04-25T21:51:31.678Z",
-      "champ": "Zaahen",
-      "result": "L",
-      "kills": 16,
-      "deaths": 8,
-      "assists": 11,
-      "cs": 295,
-      "duration": "40:50",
-      "durationSec": 2450,
-      "role": "TOP",
-      "visionScore": 47,
-      "damageDealt": 51067,
-      "goldEarned": 20709
     }
   ],
-  "updatedAt": "2026-05-04T20:07:24.853Z",
+  "updatedAt": "2026-05-04T23:14:46.072Z",
   "matchCount": 24
 }
