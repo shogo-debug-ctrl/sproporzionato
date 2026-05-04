@@ -294,227 +294,215 @@ function TweakToggle({label,value,onChange}){return(<div className="twk-row twk-
 function TweakSelect({label,value,options,onChange}){return(<TweakRow label={label}><select className="twk-field" value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o} value={o}>{o}</option>)}</select></TweakRow>)}
 
 // ═══════════════════════════════════════════════════════════════
-// STICK FIGHT CANVAS — stickman fighters that battle across screen
+// EPIC PARTICLE ARENA — anime power-up energy effects
 // ═══════════════════════════════════════════════════════════════
-function StickFightArena({ palette }) {
+function EpicParticleArena({ palette }) {
   const canvasRef = React.useRef(null);
 
   React.useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    let raf;
-    let t = 0;
+    let raf, t = 0;
 
     function resize() {
-      canvas.width = canvas.offsetWidth * 2;
-      canvas.height = canvas.offsetHeight * 2;
-      ctx.scale(2, 2);
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = canvas.offsetHeight * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
     window.addEventListener('resize', resize);
 
     const W = () => canvas.offsetWidth;
     const H = () => canvas.offsetHeight;
-    const ground = () => H() - 20;
 
-    // Sparks array
-    const sparks = [];
+    // Particle pool
+    const particles = [];
+    const trails = [];
+    const slashes = [];
+    const rings = [];
 
-    function drawStick(x, y, facing, color, pose, glow) {
-      const s = facing; // 1 = right, -1 = left
-      ctx.save();
-      ctx.translate(x, y);
-      ctx.strokeStyle = color;
-      ctx.lineWidth = 3;
-      ctx.lineCap = 'round';
-      ctx.shadowColor = glow || color;
-      ctx.shadowBlur = 12;
-
-      // Head
-      ctx.beginPath();
-      ctx.arc(0, -40, 8, 0, Math.PI * 2);
-      ctx.stroke();
-
-      // Eyes (glowing)
-      ctx.fillStyle = palette.secondary;
-      ctx.shadowBlur = 6;
-      ctx.beginPath();
-      ctx.arc(s * 3, -42, 1.5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowBlur = 12;
-
-      // Body
-      ctx.beginPath();
-      ctx.moveTo(0, -32);
-      ctx.lineTo(0, 0);
-      ctx.stroke();
-
-      if (pose === 'idle') {
-        // Arms down
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 18, -10); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -12, -8); ctx.stroke();
-        // Legs
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 10, 22); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -8, 22); ctx.stroke();
-      } else if (pose === 'run') {
-        const legAnim = Math.sin(t * 12) * 18;
-        const armAnim = Math.sin(t * 12) * 14;
-        // Arms swinging
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 14 + armAnim, -14); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 14 - armAnim, -14); ctx.stroke();
-        // Legs running
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(legAnim, 22); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-legAnim, 22); ctx.stroke();
-      } else if (pose === 'attack1') {
-        // Sword swing high
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 28, -38); ctx.stroke();
-        // Sword blade
-        ctx.strokeStyle = palette.secondary;
-        ctx.lineWidth = 2;
-        ctx.shadowColor = palette.secondary;
-        ctx.shadowBlur = 20;
-        ctx.beginPath(); ctx.moveTo(s * 28, -38); ctx.lineTo(s * 48, -50); ctx.stroke();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.shadowColor = glow || color;
-        ctx.shadowBlur = 12;
-        // Other arm
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -10, -6); ctx.stroke();
-        // Legs lunge
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 20, 18); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -14, 22); ctx.stroke();
-      } else if (pose === 'attack2') {
-        // Horizontal slash
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 22, -22); ctx.stroke();
-        ctx.strokeStyle = palette.secondary;
-        ctx.lineWidth = 2.5;
-        ctx.shadowBlur = 25;
-        ctx.beginPath(); ctx.moveTo(s * 22, -22); ctx.lineTo(s * 50, -18); ctx.stroke();
-        ctx.strokeStyle = color;
-        ctx.lineWidth = 3;
-        ctx.shadowBlur = 12;
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -15, -10); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 16, 20); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -10, 22); ctx.stroke();
-      } else if (pose === 'block') {
-        // Shield pose
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -5, -32); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 12, -18); ctx.stroke();
-        ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(s * 10, -28); ctx.lineTo(s * 14, -10); ctx.stroke();
-        ctx.lineWidth = 3;
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 6, 22); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -8, 22); ctx.stroke();
-      } else if (pose === 'kick') {
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * 12, -8); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -14, -12); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 35, -5); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -10, 22); ctx.stroke();
-      } else if (pose === 'hit') {
-        // Knocked back
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -20, -30); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, -22); ctx.lineTo(s * -15, -8); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * -5, 22); ctx.stroke();
-        ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(s * 10, 20); ctx.stroke();
-      }
-      ctx.restore();
-    }
-
-    function addSparks(x, y, count, color) {
-      for (let i = 0; i < count; i++) {
-        sparks.push({
-          x, y,
-          vx: (Math.random() - 0.5) * 8,
-          vy: -Math.random() * 6 - 2,
+    // Spawn energy orbs from center
+    function spawnOrbs(cx, cy) {
+      const colors = [palette.primary, palette.secondary, palette.tertiary, '#fff'];
+      for (let i = 0; i < 3; i++) {
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 1 + Math.random() * 3;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed - 1,
+          size: 2 + Math.random() * 4,
           life: 1,
-          color: color || palette.secondary,
-          size: 1 + Math.random() * 2,
+          decay: 0.008 + Math.random() * 0.012,
+          color: colors[Math.floor(Math.random() * colors.length)],
+          type: 'orb',
         });
       }
     }
 
-    function drawSparks() {
-      for (let i = sparks.length - 1; i >= 0; i--) {
-        const s = sparks[i];
-        s.x += s.vx;
-        s.y += s.vy;
-        s.vy += 0.3;
-        s.life -= 0.03;
-        if (s.life <= 0) { sparks.splice(i, 1); continue; }
-        ctx.save();
-        ctx.globalAlpha = s.life;
-        ctx.fillStyle = s.color;
-        ctx.shadowColor = s.color;
-        ctx.shadowBlur = 8;
-        ctx.beginPath();
-        ctx.arc(s.x, s.y, s.size, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
+    // Spawn rising sparks (embers floating up)
+    function spawnEmbers() {
+      const w = W();
+      particles.push({
+        x: Math.random() * w,
+        y: H() + 5,
+        vx: (Math.random() - 0.5) * 0.5,
+        vy: -0.5 - Math.random() * 1.5,
+        size: 1 + Math.random() * 2.5,
+        life: 1,
+        decay: 0.004 + Math.random() * 0.004,
+        color: [palette.primary, palette.secondary, palette.tertiary][Math.floor(Math.random() * 3)],
+        type: 'ember',
+      });
     }
 
-    // Fight choreography: sequence of {duration, f1pose, f2pose, f1x, f2x}
-    const SEQ = [
-      { dur: 1.5, p1: 'run', p2: 'run', x1: [0.1, 0.35], x2: [0.9, 0.65] },
-      { dur: 0.4, p1: 'attack1', p2: 'block', x1: [0.35, 0.42], x2: [0.65, 0.58], spark: true },
-      { dur: 0.3, p1: 'idle', p2: 'idle', x1: [0.42, 0.38], x2: [0.58, 0.62] },
-      { dur: 0.4, p1: 'block', p2: 'attack2', x1: [0.38, 0.35], x2: [0.62, 0.55], spark: true },
-      { dur: 0.3, p1: 'hit', p2: 'idle', x1: [0.35, 0.25], x2: [0.55, 0.58] },
-      { dur: 0.5, p1: 'run', p2: 'idle', x1: [0.25, 0.45], x2: [0.58, 0.58] },
-      { dur: 0.35, p1: 'kick', p2: 'hit', x1: [0.45, 0.48], x2: [0.58, 0.7], spark: true },
-      { dur: 0.4, p1: 'attack2', p2: 'block', x1: [0.48, 0.55], x2: [0.7, 0.65], spark: true },
-      { dur: 0.3, p1: 'idle', p2: 'attack1', x1: [0.55, 0.5], x2: [0.65, 0.58], spark: true },
-      { dur: 0.3, p1: 'hit', p2: 'idle', x1: [0.5, 0.35], x2: [0.58, 0.6] },
-      { dur: 0.5, p1: 'run', p2: 'run', x1: [0.35, 0.45], x2: [0.6, 0.55] },
-      { dur: 0.35, p1: 'attack1', p2: 'attack2', x1: [0.45, 0.48], x2: [0.55, 0.52], spark: true },
-      { dur: 0.6, p1: 'idle', p2: 'hit', x1: [0.48, 0.48], x2: [0.52, 0.75] },
-      { dur: 1.2, p1: 'idle', p2: 'run', x1: [0.48, 0.48], x2: [0.75, 0.9] },
-      { dur: 1.0, p1: 'run', p2: 'run', x1: [0.48, 0.1], x2: [0.9, 0.9] },
-    ];
-    const totalDur = SEQ.reduce((s, a) => s + a.dur, 0);
-
-    function getState(time) {
-      let elapsed = time % totalDur;
-      for (const step of SEQ) {
-        if (elapsed < step.dur) {
-          const p = elapsed / step.dur;
-          const x1 = step.x1[0] + (step.x1[1] - step.x1[0]) * p;
-          const x2 = step.x2[0] + (step.x2[1] - step.x2[0]) * p;
-          return { p1: step.p1, p2: step.p2, x1, x2, spark: step.spark && p > 0.3 && p < 0.6, sparkP: p };
-        }
-        elapsed -= step.dur;
-      }
-      return { p1: 'idle', p2: 'idle', x1: 0.3, x2: 0.7 };
+    // Spawn a slash trail (like sword cut)
+    function spawnSlash() {
+      const w = W(), h = H();
+      const startX = Math.random() * w;
+      const startY = 10 + Math.random() * (h - 20);
+      const angle = -0.8 + Math.random() * 1.6;
+      const len = 80 + Math.random() * 160;
+      slashes.push({
+        x: startX, y: startY,
+        angle,
+        len,
+        life: 1,
+        decay: 0.025,
+        color: [palette.primary, palette.secondary, palette.tertiary][Math.floor(Math.random() * 3)],
+        width: 2 + Math.random() * 3,
+      });
     }
 
-    let lastSpark = 0;
+    // Energy ring pulse from center
+    function spawnRing() {
+      const w = W(), h = H();
+      rings.push({
+        x: w * (0.3 + Math.random() * 0.4),
+        y: h * (0.3 + Math.random() * 0.4),
+        radius: 0,
+        maxRadius: 60 + Math.random() * 80,
+        life: 1,
+        decay: 0.015,
+        color: [palette.primary, palette.secondary][Math.floor(Math.random() * 2)],
+      });
+    }
+
+    let lastSlash = 0, lastRing = 0, lastBurst = 0;
+
     function animate() {
       t += 0.016;
-      const w = W(), h = H(), g = ground();
+      const w = W(), h = H();
       ctx.clearRect(0, 0, w, h);
 
-      // Ground line
-      ctx.strokeStyle = palette.primary + '33';
-      ctx.lineWidth = 1;
-      ctx.setLineDash([4, 8]);
-      ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(w, g); ctx.stroke();
-      ctx.setLineDash([]);
+      // Background glow (center energy source)
+      const cx = w / 2, cy = h / 2;
+      const pulseSize = 80 + Math.sin(t * 2) * 30;
+      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseSize);
+      grad.addColorStop(0, palette.primary + '18');
+      grad.addColorStop(0.5, palette.secondary + '08');
+      grad.addColorStop(1, 'transparent');
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, w, h);
 
-      const state = getState(t);
+      // Spawn embers continuously
+      if (Math.random() < 0.3) spawnEmbers();
 
-      // Fighters
-      drawStick(state.x1 * w, g, 1, palette.primary, state.p1, palette.primary);
-      drawStick(state.x2 * w, g, -1, '#8899aa', state.p2, '#667788');
-
-      // Clash sparks
-      if (state.spark && t - lastSpark > 0.15) {
-        const mx = (state.x1 + state.x2) / 2 * w;
-        addSparks(mx, g - 25, 8, palette.secondary);
-        lastSpark = t;
+      // Periodic energy burst from center
+      if (t - lastBurst > 2 + Math.random() * 3) {
+        for (let i = 0; i < 20; i++) spawnOrbs(cx, cy);
+        lastBurst = t;
       }
 
-      drawSparks();
+      // Periodic slash
+      if (t - lastSlash > 1.5 + Math.random() * 2) {
+        spawnSlash();
+        lastSlash = t;
+      }
+
+      // Periodic ring
+      if (t - lastRing > 3 + Math.random() * 4) {
+        spawnRing();
+        lastRing = t;
+      }
+
+      // Draw & update slashes
+      for (let i = slashes.length - 1; i >= 0; i--) {
+        const s = slashes[i];
+        s.life -= s.decay;
+        if (s.life <= 0) { slashes.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = s.life * s.life;
+        ctx.translate(s.x, s.y);
+        ctx.rotate(s.angle);
+        // Slash gradient
+        const slashGrad = ctx.createLinearGradient(-s.len / 2, 0, s.len / 2, 0);
+        slashGrad.addColorStop(0, 'transparent');
+        slashGrad.addColorStop(0.3, s.color);
+        slashGrad.addColorStop(0.5, '#fff');
+        slashGrad.addColorStop(0.7, s.color);
+        slashGrad.addColorStop(1, 'transparent');
+        ctx.strokeStyle = slashGrad;
+        ctx.lineWidth = s.width * s.life;
+        ctx.shadowColor = s.color;
+        ctx.shadowBlur = 20 * s.life;
+        ctx.beginPath();
+        ctx.moveTo(-s.len / 2, 0);
+        ctx.lineTo(s.len / 2, 0);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Draw & update rings
+      for (let i = rings.length - 1; i >= 0; i--) {
+        const r = rings[i];
+        r.life -= r.decay;
+        r.radius += (r.maxRadius - r.radius) * 0.08;
+        if (r.life <= 0) { rings.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = r.life * 0.6;
+        ctx.strokeStyle = r.color;
+        ctx.lineWidth = 2 * r.life;
+        ctx.shadowColor = r.color;
+        ctx.shadowBlur = 15 * r.life;
+        ctx.beginPath();
+        ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Draw & update particles
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.life -= p.decay;
+        if (p.type === 'orb') {
+          p.vx *= 0.98;
+          p.vy *= 0.98;
+        }
+        if (p.life <= 0 || p.y < -10) { particles.splice(i, 1); continue; }
+        ctx.save();
+        ctx.globalAlpha = p.life;
+        ctx.fillStyle = p.color;
+        ctx.shadowColor = p.color;
+        ctx.shadowBlur = p.size * 4;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+        ctx.fill();
+        // Bright core
+        if (p.size > 3) {
+          ctx.globalAlpha = p.life * 0.8;
+          ctx.fillStyle = '#fff';
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, p.size * p.life * 0.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.restore();
+      }
+
       raf = requestAnimationFrame(animate);
     }
 
@@ -523,15 +511,8 @@ function StickFightArena({ palette }) {
   }, [palette]);
 
   return (
-    <div style={{ width: '100%', height: '120px', marginBottom: '16px', position: 'relative' }}>
+    <div style={{ width: '100%', height: '100px', marginBottom: '16px', position: 'relative', opacity: 0.85 }}>
       <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }}/>
-      <div style={{
-        position: 'absolute', top: '8px', left: '50%', transform: 'translateX(-50%)',
-        ...dsBase.display, fontSize: '11px', letterSpacing: '0.2em',
-        color: D_DIM, opacity: 0.6,
-      }}>
-        {"\u2694"} STICK FIGHT ARENA {"\u2694"}
-      </div>
     </div>
   );
 }
@@ -1043,8 +1024,8 @@ function DarkShonenApp(){
 
         <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
 
-        {/* Stick Fight Arena */}
-        <StickFightArena palette={palette}/>
+        {/* Epic Particle Arena */}
+        <EpicParticleArena palette={palette}/>
 
         <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
         <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
