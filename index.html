@@ -13,6 +13,55 @@
   *::-webkit-scrollbar{width:10px;height:10px}
   *::-webkit-scrollbar-track{background:#0a0810}
   *::-webkit-scrollbar-thumb{background:#2a2238;border-radius:6px}
+
+  /* ── Cinematic Intro ── */
+  @keyframes introFlash{0%{opacity:1;background:#fff}30%{opacity:1;background:#ff2e5b}60%{opacity:.6;background:#0a0810}100%{opacity:0;pointer-events:none}}
+  @keyframes introTitle{0%{transform:scale(3) rotate(-5deg);opacity:0;filter:blur(20px)}40%{transform:scale(1.1) rotate(1deg);opacity:1;filter:blur(0)}60%{transform:scale(0.95) rotate(-0.5deg)}100%{transform:scale(1) rotate(0deg)}}
+  @keyframes introSlash{0%{transform:scaleX(0) rotate(-35deg);opacity:0}30%{transform:scaleX(1.2) rotate(-35deg);opacity:1}100%{transform:scaleX(0) rotate(-35deg);opacity:0}}
+  @keyframes introSubtitle{0%{transform:translateY(30px);opacity:0}100%{transform:translateY(0);opacity:1}}
+  @keyframes fadeInUp{0%{transform:translateY(40px);opacity:0}100%{transform:translateY(0);opacity:1}}
+
+  /* ── Silhouette Fighters ── */
+  @keyframes fighterLeft{
+    0%{transform:translateX(-120px) scaleX(1)}
+    25%{transform:translateX(30px) scaleX(1)}
+    35%{transform:translateX(20px) scaleX(1) rotate(-8deg)}
+    50%{transform:translateX(40px) scaleX(1) rotate(5deg)}
+    65%{transform:translateX(10px) scaleX(1)}
+    80%{transform:translateX(35px) scaleX(1) rotate(-3deg)}
+    100%{transform:translateX(-120px) scaleX(1)}
+  }
+  @keyframes fighterRight{
+    0%{transform:translateX(120px) scaleX(-1)}
+    25%{transform:translateX(-30px) scaleX(-1)}
+    35%{transform:translateX(-20px) scaleX(-1) rotate(8deg)}
+    50%{transform:translateX(-40px) scaleX(-1) rotate(-5deg)}
+    65%{transform:translateX(-10px) scaleX(-1)}
+    80%{transform:translateX(-35px) scaleX(-1) rotate(3deg)}
+    100%{transform:translateX(120px) scaleX(-1)}
+  }
+  @keyframes clashSpark{
+    0%,40%{opacity:0;transform:scale(0)}
+    45%{opacity:1;transform:scale(1.5)}
+    55%{opacity:1;transform:scale(2)}
+    65%{opacity:0;transform:scale(3)}
+    100%{opacity:0;transform:scale(0)}
+  }
+  @keyframes swordSlash{
+    0%,30%{opacity:0;transform:rotate(-60deg) scaleY(0)}
+    35%{opacity:.8;transform:rotate(15deg) scaleY(1)}
+    50%{opacity:0;transform:rotate(40deg) scaleY(0)}
+    100%{opacity:0}
+  }
+
+  /* ── Floating Particles ── */
+  @keyframes particleFloat{
+    0%{transform:translateY(0) translateX(0) scale(1);opacity:0}
+    10%{opacity:1}
+    90%{opacity:1}
+    100%{transform:translateY(-100vh) translateX(var(--drift)) scale(0);opacity:0}
+  }
+  @keyframes sparkle{0%,100%{opacity:.3;transform:scale(.8)}50%{opacity:1;transform:scale(1.2)}}
 </style>
 </head>
 <body>
@@ -286,6 +335,201 @@ function TweakToggle({label,value,onChange}){return(<div className="twk-row twk-
 function TweakSelect({label,value,options,onChange}){return(<TweakRow label={label}><select className="twk-field" value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o} value={o}>{o}</option>)}</select></TweakRow>)}
 
 // ═══════════════════════════════════════════════════════════════
+// CINEMATIC INTRO
+// ═══════════════════════════════════════════════════════════════
+function CinematicIntro({ palette, onDone }) {
+  const [phase, setPhase] = React.useState(0);
+  React.useEffect(() => {
+    const t1 = setTimeout(() => setPhase(1), 300);
+    const t2 = setTimeout(() => setPhase(2), 1200);
+    const t3 = setTimeout(() => setPhase(3), 2400);
+    const t4 = setTimeout(() => { setPhase(4); onDone(); }, 3800);
+    return () => { clearTimeout(t1); clearTimeout(t2); clearTimeout(t3); clearTimeout(t4); };
+  }, []);
+
+  if (phase >= 4) return null;
+
+  return (
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 99999,
+      background: '#0a0810',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      flexDirection: 'column',
+      animation: phase >= 3 ? 'introFlash 1.4s ease-out forwards' : undefined,
+    }}>
+      {/* Flash slash */}
+      {phase >= 1 && (
+        <div style={{
+          position: 'absolute', width: '150%', height: '8px',
+          background: `linear-gradient(90deg, transparent, ${palette.secondary}, ${palette.primary}, transparent)`,
+          animation: 'introSlash 0.8s ease-out forwards',
+          boxShadow: `0 0 40px ${palette.secondary}, 0 0 80px ${palette.primary}`,
+        }}/>
+      )}
+      {/* Title */}
+      {phase >= 1 && (
+        <div style={{
+          ...dsBase.display, fontSize: 'clamp(48px, 12vw, 140px)',
+          color: D_INK,
+          WebkitTextStroke: `4px ${D_LINE}`,
+          textShadow: `8px 8px 0 ${palette.primary}, 0 0 60px ${palette.primary}88`,
+          animation: 'introTitle 1.2s cubic-bezier(.2,1,.3,1) forwards',
+          zIndex: 1,
+        }}>
+          SPROPORZIONATO!
+        </div>
+      )}
+      {/* Subtitle */}
+      {phase >= 2 && (
+        <div style={{
+          ...dsBase.hand, fontSize: '28px', color: palette.secondary,
+          marginTop: '16px',
+          textShadow: `0 0 20px ${palette.secondary}88`,
+          animation: 'introSubtitle 0.6s ease-out forwards',
+        }}>
+          {"\u2192"} Master Run // la corsa finale
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// FLOATING PARTICLES
+// ═══════════════════════════════════════════════════════════════
+function FloatingParticles({ palette, count = 20 }) {
+  const particles = React.useMemo(() => {
+    return Array.from({ length: count }, (_, i) => ({
+      id: i,
+      left: Math.random() * 100,
+      delay: Math.random() * 15,
+      duration: 8 + Math.random() * 12,
+      size: 2 + Math.random() * 4,
+      drift: (Math.random() - 0.5) * 100,
+      color: [palette.primary, palette.secondary, palette.tertiary, '#fff'][Math.floor(Math.random() * 4)],
+    }));
+  }, [palette]);
+
+  return (
+    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
+      {particles.map(p => (
+        <div key={p.id} style={{
+          position: 'absolute',
+          bottom: '-10px',
+          left: `${p.left}%`,
+          width: `${p.size}px`,
+          height: `${p.size}px`,
+          borderRadius: '50%',
+          background: p.color,
+          boxShadow: `0 0 ${p.size * 3}px ${p.color}88`,
+          animation: `particleFloat ${p.duration}s ${p.delay}s linear infinite`,
+          '--drift': `${p.drift}px`,
+          opacity: 0,
+        }}/>
+      ))}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SILHOUETTE FIGHTERS (header)
+// ═══════════════════════════════════════════════════════════════
+function SilhouetteFighters({ palette, intensity }) {
+  // Warrior with sword (Ambessa-like) - left fighter
+  const warrior = (
+    <svg viewBox="0 0 100 140" width="90" height="126" style={{ filter: `drop-shadow(0 0 8px ${palette.primary}66)` }}>
+      {/* Body */}
+      <ellipse cx="50" cy="55" rx="18" ry="22" fill={palette.primary} opacity="0.85"/>
+      {/* Head */}
+      <circle cx="50" cy="28" r="13" fill={palette.primary} opacity="0.85"/>
+      {/* Legs */}
+      <line x1="42" y1="75" x2="32" y2="115" stroke={palette.primary} strokeWidth="7" strokeLinecap="round" opacity="0.85"/>
+      <line x1="58" y1="75" x2="72" y2="110" stroke={palette.primary} strokeWidth="7" strokeLinecap="round" opacity="0.85"/>
+      {/* Sword arm */}
+      <line x1="65" y1="45" x2="95" y2="20" stroke={palette.primary} strokeWidth="6" strokeLinecap="round" opacity="0.85"/>
+      {/* Sword blade */}
+      <line x1="88" y1="25" x2="98" y2="2" stroke={palette.secondary} strokeWidth="3" strokeLinecap="round"/>
+      <line x1="98" y1="2" x2="95" y2="0" stroke={palette.secondary} strokeWidth="2"/>
+      {/* Shield arm */}
+      <line x1="35" y1="48" x2="18" y2="60" stroke={palette.primary} strokeWidth="6" strokeLinecap="round" opacity="0.85"/>
+      <rect x="8" y="52" width="16" height="20" rx="3" fill={palette.primary} opacity="0.7"/>
+      {/* Eye glow */}
+      <circle cx="46" cy="26" r="2" fill={palette.secondary}/>
+      <circle cx="54" cy="26" r="2" fill={palette.secondary}/>
+    </svg>
+  );
+
+  // Enemy fighter - right
+  const enemy = (
+    <svg viewBox="0 0 100 140" width="80" height="112" style={{ filter: `drop-shadow(0 0 8px ${palette.tertiary}44)` }}>
+      <ellipse cx="50" cy="55" rx="16" ry="20" fill="#445" opacity="0.7"/>
+      <circle cx="50" cy="30" r="12" fill="#445" opacity="0.7"/>
+      <line x1="40" y1="73" x2="30" y2="112" stroke="#445" strokeWidth="6" strokeLinecap="round" opacity="0.7"/>
+      <line x1="60" y1="73" x2="70" y2="108" stroke="#445" strokeWidth="6" strokeLinecap="round" opacity="0.7"/>
+      <line x1="33" y1="45" x2="5" y2="25" stroke="#445" strokeWidth="5" strokeLinecap="round" opacity="0.7"/>
+      <line x1="5" y1="25" x2="0" y2="8" stroke="#667" strokeWidth="2.5" strokeLinecap="round"/>
+      <line x1="67" y1="48" x2="85" y2="58" stroke="#445" strokeWidth="5" strokeLinecap="round" opacity="0.7"/>
+      <circle cx="46" cy="28" r="1.5" fill="#ff4466" opacity="0.9"/>
+      <circle cx="54" cy="28" r="1.5" fill="#ff4466" opacity="0.9"/>
+    </svg>
+  );
+
+  return (
+    <div style={{ position: 'absolute', bottom: '10px', left: '50%', transform: 'translateX(-50%)', width: '300px', height: '140px', pointerEvents: 'none', zIndex: 0, opacity: 0.5 }}>
+      {/* Left fighter */}
+      <div style={{ position: 'absolute', left: '20px', bottom: 0, animation: 'fighterLeft 6s ease-in-out infinite' }}>
+        {warrior}
+      </div>
+      {/* Right fighter */}
+      <div style={{ position: 'absolute', right: '20px', bottom: 0, animation: 'fighterRight 6s ease-in-out infinite' }}>
+        {enemy}
+      </div>
+      {/* Clash spark */}
+      <div style={{
+        position: 'absolute', left: '50%', top: '30%', transform: 'translate(-50%,-50%)',
+        width: '30px', height: '30px',
+        background: `radial-gradient(circle, ${palette.secondary} 0%, transparent 70%)`,
+        animation: 'clashSpark 6s ease-in-out infinite',
+        borderRadius: '50%',
+        boxShadow: `0 0 30px ${palette.secondary}, 0 0 60px ${palette.primary}`,
+      }}/>
+      {/* Sword slash effect */}
+      <div style={{
+        position: 'absolute', left: '45%', top: '25%',
+        width: '80px', height: '4px',
+        background: `linear-gradient(90deg, transparent, ${palette.secondary}, transparent)`,
+        animation: 'swordSlash 6s ease-out infinite',
+        boxShadow: `0 0 12px ${palette.secondary}`,
+        borderRadius: '2px',
+      }}/>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// ANIMATED SECTION WRAPPER
+// ═══════════════════════════════════════════════════════════════
+function AnimatedSection({ children, delay = 0 }) {
+  const [visible, setVisible] = React.useState(false);
+  const ref = React.useRef(null);
+  React.useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) { setVisible(true); observer.disconnect(); }
+    }, { threshold: 0.1 });
+    if (ref.current) observer.observe(ref.current);
+    return () => observer.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{
+      animation: visible ? `fadeInUp 0.6s ${delay}s ease-out both` : undefined,
+      opacity: visible ? undefined : 0,
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // MANGA PANEL COMPONENTS
 // ═══════════════════════════════════════════════════════════════
 
@@ -350,6 +594,7 @@ function DSHeader({palette,intensity,soundFx,rank}){
           {soundFx&&<div style={{position:'absolute',top:'-10px',right:'-20px',...dsBase.display,fontSize:'36px',color:palette.secondary,transform:'rotate(15deg)',textShadow:`2px 2px 0 ${D_LINE}, 0 0 12px ${palette.secondary}88`,animation:'dsPulse 1.4s ease-in-out infinite'}}>BOOM!!</div>}
         </div>
       </div>
+      <SilhouetteFighters palette={palette} intensity={intensity}/>
     </div>
   );
 }
@@ -732,6 +977,17 @@ function DarkShonenApp(){
   const speedLines=t.speedLines;
   const tiltAmt=t.tilt;
   const compact=t.compactMode;
+  const [introPlayed, setIntroPlayed] = React.useState(() => {
+    const last = localStorage.getItem('ds-intro-ts');
+    // Show intro once per session (30 min cooldown)
+    return last && (Date.now() - parseInt(last)) < 1800000;
+  });
+  const [introDone, setIntroDone] = React.useState(introPlayed);
+
+  const onIntroDone = React.useCallback(() => {
+    setIntroDone(true);
+    localStorage.setItem('ds-intro-ts', String(Date.now()));
+  }, []);
 
   if(!raw) return <LoadingScreen/>;
 
@@ -742,9 +998,17 @@ function DarkShonenApp(){
   return(
     <div style={{minHeight:'100vh',background:D_INK,backgroundImage:pageBg,color:D_LINE,...dsBase.body}}>
       <style>{`@keyframes dsPulse{0%,100%{transform:rotate(15deg) scale(1)}50%{transform:rotate(15deg) scale(1.12)}}`}</style>
-      <div style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box'}}>
+
+      {/* Cinematic Intro */}
+      {!introPlayed && <CinematicIntro palette={palette} onDone={onIntroDone}/>}
+
+      {/* Floating Particles */}
+      <FloatingParticles palette={palette} count={25}/>
+
+      <div style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
 
         {/* Update bar */}
+        <AnimatedSection delay={0}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px',...dsBase.mono,fontSize:'11px',color:D_DIM}}>
           <div>
             {"\uD83D\uDD34"} LIVE {"\u00B7"} auto-refresh ogni 3 min
@@ -755,17 +1019,27 @@ function DarkShonenApp(){
             <button onClick={refresh} style={{background:'none',border:`1px solid ${D_DIM}`,color:D_LINE,padding:'2px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',fontFamily:'inherit'}}>refresh</button>
           </div>
         </div>
+        </AnimatedSection>
 
         {/* Season record from API */}
         {d.rank && <div style={{...dsBase.mono,fontSize:'12px',color:D_DIM,marginBottom:'8px',textAlign:'center'}}>
           Season record: {d.rank.wins}W {d.rank.losses}L ({Math.round(d.rank.wins/(d.rank.wins+d.rank.losses)*100)}%) {d.rank.hotStreak ? `${"\u00B7"} HOT STREAK \uD83D\uDD25` : ''}
         </div>}
 
-        <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
-        <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
-        <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
-        <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
+        <AnimatedSection delay={0.1}>
+          <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
+        </AnimatedSection>
+        <AnimatedSection delay={0.2}>
+          <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
+        </AnimatedSection>
+        <AnimatedSection delay={0.3}>
+          <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
+        </AnimatedSection>
+        <AnimatedSection delay={0}>
+          <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
+        </AnimatedSection>
 
+        <AnimatedSection delay={0}>
         <div style={{display:'grid',gridTemplateColumns:'7fr 5fr',gap:'16px',marginBottom:'24px'}}>
           <MangaPanelDark accent={palette.tertiary} intensity={intensity} halftone={halftone} style={{padding:'18px 20px'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'8px'}}>
@@ -776,7 +1050,9 @@ function DarkShonenApp(){
           </MangaPanelDark>
           <DSMvp palette={palette} intensity={intensity} halftone={halftone} d={d}/>
         </div>
+        </AnimatedSection>
 
+        <AnimatedSection delay={0}>
         <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
           <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'12px'}}>
             <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>BATTLE LOG <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// LIVE</span></div>
@@ -788,7 +1064,9 @@ function DarkShonenApp(){
             ))}
           </div>
         </MangaPanelDark>
+        </AnimatedSection>
 
+        <AnimatedSection delay={0}>
         <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
           <div style={{...dsBase.display,fontSize:'24px',marginBottom:'12px',color:D_LINE}}>
             CHAMPION ROSTER <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.mainRole ? ROLE_NAMES[d.mainRole.role] : '?'} MAIN</span>
@@ -797,8 +1075,11 @@ function DarkShonenApp(){
             {d.champStats.map(s=><DSChampCard key={s.name} s={s} palette={palette} intensity={intensity} halftone={halftone}/>)}
           </div>
         </MangaPanelDark>
+        </AnimatedSection>
 
+        <AnimatedSection delay={0}>
         <DSVoting palette={palette} intensity={intensity} halftone={halftone}/>
+        </AnimatedSection>
 
         <div style={{position:'relative',textAlign:'center',padding:'20px 0'}}>
           <BurstShapeDark size={140} color={palette.secondary} stroke={D_LINE}>
