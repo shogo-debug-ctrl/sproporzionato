@@ -129,14 +129,18 @@ function useLiveData() {
 function processData(raw) {
   const rank = raw.rank;
   const currentAbs = rank ? absLP(rank.tier, rank.rank, rank.lp) : 0;
-  const startAbs = absLP("EMERALD", "II", 62);
+  const startAbs = absLP("EMERALD", "II", 0);
   const progressPct = Math.min(100, Math.max(0, (currentAbs - startAbs) / (MASTER_ABS - startAbs) * 100));
   const lpToMaster = Math.max(0, MASTER_ABS - currentAbs);
 
   const matches = raw.matches || [];
-  const totalGames = matches.length;
-  const totalWins = matches.filter(m => m.result === 'W').length;
-  const totalWR = totalGames ? Math.round(totalWins / totalGames * 100) : 0;
+  // Use season totals from API (all games, not just last 24)
+  const seasonWins = rank ? rank.wins : 0;
+  const seasonLosses = rank ? rank.losses : 0;
+  const seasonGames = seasonWins + seasonLosses;
+  const totalWR = seasonGames ? Math.round(seasonWins / seasonGames * 100) : 0;
+  const totalWins = seasonWins;
+  const totalGames = seasonGames;
 
   // Streak
   let streakCount = 0;
@@ -351,10 +355,11 @@ function DSHeader({palette,intensity,soundFx,rank}){
 }
 
 function DSStats({palette,intensity,halftone,showStreak,tiltAmt,d}){
+  const tierName = d.rank ? d.rank.tier.charAt(0) + d.rank.tier.slice(1).toLowerCase() : '...';
   const items=[
-    {l:'POWER LV.',v:d.rank?`${d.rank.tier.slice(0,1)}-${d.rank.rank}`:'...',s:`${d.rank?.lp||0} LP`,c:palette.tertiary,t:-1},
+    {l:'POWER LV.',v:d.rank?`${tierName} ${d.rank.rank}`:'...',s:`${d.rank?.lp||0} LP`,c:palette.tertiary,t:-1},
     {l:'STREAK',v:`${d.streakCount}\u00D7${d.streakType}`,s:d.streakCount>=3?'on fire!!':'keep going',c:palette.primary,t:1,hot:d.streakCount>=3,streakBadge:true},
-    {l:'WIN RATE',v:`${d.totalWR}%`,s:`${d.totalWins}W \u2014 ${d.totalGames-d.totalWins}L`,c:palette.secondary,t:-1},
+    {l:'WIN RATE',v:`${d.totalWR}%`,s:`${d.totalWins}W \u2014 ${d.totalGames-d.totalWins}L (season)`,c:palette.secondary,t:-1},
     {l:'LP TO MASTER',v:String(d.lpToMaster),s:d.lpToMaster<=200?'quasi!!':'final boss approach',c:'#a86bff',t:1},
   ];
   return(
@@ -411,12 +416,15 @@ function DSMilestones({palette,intensity,tiltAmt,d}){
       <div style={{display:'grid',gridTemplateColumns:`repeat(${d.milestones.length},1fr)`,gap:'8px'}}>
         {d.milestones.map((m,i)=>{
           const done=m.status==='done';const current=m.status==='current';const goal=m.status==='goal'&&d.currentAbs>=MASTER_ABS;
-          const bg=goal?palette.primary:done?palette.tertiary:current?palette.secondary:D_PAPER;
-          const fg=(goal||done||current)?D_INK:D_LINE;
-          const glow=(goal||done||current)?bg:null;
+          const isEmerald=m.tier.startsWith('EMERALD');const isDiamond=m.tier.startsWith('DIAMOND');const isMaster=m.tier==='MASTER';
+          const tierColor=isMaster?'#ff2e5b':isDiamond?'#3acfff':isEmerald?'#5eff9a':'#ffd23a';
+          const reached=done||current||(goal&&d.currentAbs>=MASTER_ABS);
+          const bg=reached?tierColor:D_PAPER;
+          const fg=reached?D_INK:tierColor;
+          const glow=reached?tierColor:null;
           const isA=active===i;
           return(<div key={i} onClick={()=>setActive(isA?null:i)} style={{background:bg,border:`3px solid ${D_LINE}`,boxShadow:`3px 3px 0 ${D_LINE}${glow?`, 0 0 ${(isA?28:18)*intensity}px ${glow}aa`:''}`,padding:'10px 6px',textAlign:'center',transform:`rotate(${(i%2===0?-1:1)*tiltAmt}deg) ${isA?'scale(1.05)':''}`,cursor:'pointer',transition:'transform .25s, box-shadow .25s'}}>
-            <div style={{...dsBase.display,fontSize:'11px',color:fg,letterSpacing:'0.15em'}}>{done?'\u2713 DONE':current?'\u25C6 NOW':goal?'\u2605 GOAL':'\u00B7 \u00B7 \u00B7'}</div>
+            <div style={{...dsBase.display,fontSize:'11px',color:fg,letterSpacing:'0.15em'}}>{done?'\u2713 DONE':current?'\u25C6 NOW':(goal&&d.currentAbs>=MASTER_ABS)?'\u2605 GOAL':'\u00B7 \u00B7 \u00B7'}</div>
             <div style={{...dsBase.display,fontSize:'18px',color:fg,lineHeight:1.1,marginTop:'3px'}}>{m.tier}</div>
           </div>);
         })}
@@ -569,6 +577,150 @@ function LoadingScreen() {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// VOTING SYSTEM
+// ═══════════════════════════════════════════════════════════════
+const VOTE_API = 'https://jsonblob.com/api/jsonBlob/019df399-1b79-7d73-8171-8aab681fa4f3';
+
+function useVotes() {
+  const [votes, setVotes] = React.useState(null);
+  const [myVote, setMyVote] = React.useState(() => localStorage.getItem('ds-vote'));
+  const [myName, setMyName] = React.useState(() => localStorage.getItem('ds-voter-name') || '');
+  const [loading, setLoading] = React.useState(false);
+
+  const fetchVotes = React.useCallback(async () => {
+    try {
+      const res = await fetch(VOTE_API);
+      if (res.ok) setVotes(await res.json());
+    } catch {}
+  }, []);
+
+  React.useEffect(() => { fetchVotes(); }, [fetchVotes]);
+
+  const castVote = React.useCallback(async (name, vote) => {
+    if (!name.trim()) return;
+    setLoading(true);
+    try {
+      const res = await fetch(VOTE_API);
+      const data = res.ok ? await res.json() : { votes: {} };
+      data.votes[name.trim()] = vote;
+      const entries = Object.values(data.votes);
+      data.total_yes = entries.filter(v => v === 'yes').length;
+      data.total_no = entries.filter(v => v === 'no').length;
+      await fetch(VOTE_API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      setVotes(data);
+      setMyVote(vote);
+      setMyName(name.trim());
+      localStorage.setItem('ds-vote', vote);
+      localStorage.setItem('ds-voter-name', name.trim());
+    } catch (err) { console.error('Vote error:', err); }
+    setLoading(false);
+  }, []);
+
+  return { votes, myVote, myName, castVote, loading, refresh: fetchVotes };
+}
+
+function DSVoting({ palette, intensity, halftone }) {
+  const { votes, myVote, myName, castVote, loading, refresh } = useVotes();
+  const [name, setName] = React.useState(myName);
+  const totalYes = votes?.total_yes || 0;
+  const totalNo = votes?.total_no || 0;
+  const total = totalYes + totalNo;
+  const pctYes = total ? Math.round(totalYes / total * 100) : 50;
+  const voters = votes?.votes ? Object.entries(votes.votes) : [];
+
+  return (
+    <MangaPanelDark accent={palette.primary} intensity={intensity} halftone={halftone} hatch style={{ padding: '22px 24px', marginBottom: '24px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '14px' }}>
+        <div style={{ ...dsBase.display, fontSize: '26px', color: D_LINE }}>
+          SCOMMESSA!! <span style={{ color: palette.primary, textShadow: `0 0 10px ${palette.primary}66` }}>CE LA FA?</span>
+        </div>
+        <div style={{ ...dsBase.hand, fontSize: '16px', color: palette.secondary }}>
+          {total} voti
+        </div>
+      </div>
+
+      {/* Bar */}
+      <div style={{ height: '42px', background: D_INK, border: `3px solid ${D_LINE}`, position: 'relative', marginBottom: '14px', display: 'flex', overflow: 'hidden' }}>
+        <div style={{ width: `${pctYes}%`, background: `linear-gradient(135deg, #5eff9a, #3acfff)`, display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'width .6s cubic-bezier(.3,1.4,.4,1)', minWidth: total ? '40px' : '0' }}>
+          {total > 0 && <span style={{ ...dsBase.display, fontSize: '18px', color: D_INK }}>{pctYes}%</span>}
+        </div>
+        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          {total > 0 && <span style={{ ...dsBase.display, fontSize: '18px', color: D_LINE }}>{100 - pctYes}%</span>}
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', ...dsBase.display, fontSize: '14px' }}>
+        <span style={{ color: NEON_GREEN }}>{"\u2705"} CE LA FA: {totalYes}</span>
+        <span style={{ color: palette.primary }}>{"\u274C"} NON CE LA FA: {totalNo}</span>
+      </div>
+
+      {/* Voter list */}
+      {voters.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '16px' }}>
+          {voters.map(([n, v]) => (
+            <div key={n} style={{
+              background: v === 'yes' ? 'rgba(94,255,154,0.15)' : 'rgba(255,46,91,0.15)',
+              border: `2px solid ${v === 'yes' ? NEON_GREEN : palette.primary}`,
+              padding: '4px 12px', ...dsBase.display, fontSize: '13px',
+              color: v === 'yes' ? NEON_GREEN : palette.primary,
+              boxShadow: `0 0 ${8 * intensity}px ${v === 'yes' ? NEON_GREEN : palette.primary}44`,
+            }}>
+              {n} {v === 'yes' ? '\u2705' : '\u274C'}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Vote form */}
+      <div style={{ background: D_INK, border: `3px solid ${D_LINE}`, padding: '14px 16px', boxShadow: `3px 3px 0 ${D_LINE}` }}>
+        <div style={{ ...dsBase.display, fontSize: '14px', color: D_DIM, marginBottom: '10px', letterSpacing: '0.1em' }}>
+          {myVote ? `HAI VOTATO: ${myVote === 'yes' ? 'CE LA FA' : 'NON CE LA FA'} (puoi cambiare)` : 'VOTA ORA!'}
+        </div>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <input
+            type="text"
+            placeholder="Il tuo nome..."
+            value={name}
+            onChange={e => setName(e.target.value)}
+            style={{
+              flex: 1, height: '36px', background: D_PAPER, border: `2px solid ${D_LINE}`,
+              color: D_LINE, padding: '0 12px', ...dsBase.body, fontSize: '14px',
+              outline: 'none',
+            }}
+          />
+          <button
+            onClick={() => castVote(name, 'yes')}
+            disabled={loading || !name.trim()}
+            style={{
+              height: '36px', padding: '0 16px', ...dsBase.display, fontSize: '16px',
+              background: NEON_GREEN, color: D_INK, border: `2px solid ${D_LINE}`,
+              cursor: name.trim() ? 'pointer' : 'not-allowed',
+              boxShadow: `2px 2px 0 ${D_LINE}, 0 0 ${12 * intensity}px ${NEON_GREEN}66`,
+              opacity: name.trim() ? 1 : 0.5,
+            }}
+          >
+            CE LA FA!!
+          </button>
+          <button
+            onClick={() => castVote(name, 'no')}
+            disabled={loading || !name.trim()}
+            style={{
+              height: '36px', padding: '0 16px', ...dsBase.display, fontSize: '16px',
+              background: palette.primary, color: D_INK, border: `2px solid ${D_LINE}`,
+              cursor: name.trim() ? 'pointer' : 'not-allowed',
+              boxShadow: `2px 2px 0 ${D_LINE}, 0 0 ${12 * intensity}px ${palette.primary}66`,
+              opacity: name.trim() ? 1 : 0.5,
+            }}
+          >
+            NO WAY
+          </button>
+        </div>
+      </div>
+    </MangaPanelDark>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════
 function DarkShonenApp(){
@@ -645,6 +797,8 @@ function DarkShonenApp(){
             {d.champStats.map(s=><DSChampCard key={s.name} s={s} palette={palette} intensity={intensity} halftone={halftone}/>)}
           </div>
         </MangaPanelDark>
+
+        <DSVoting palette={palette} intensity={intensity} halftone={halftone}/>
 
         <div style={{position:'relative',textAlign:'center',padding:'20px 0'}}>
           <BurstShapeDark size={140} color={palette.secondary} stroke={D_LINE}>
