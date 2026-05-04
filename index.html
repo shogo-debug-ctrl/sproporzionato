@@ -254,6 +254,7 @@ const __TWEAKS_STYLE = `
   .twk-sect{font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:rgba(255,255,255,.4);padding:10px 0 0}.twk-sect:first-child{padding-top:0}
   .twk-field{appearance:none;width:100%;height:26px;padding:0 8px;border:.5px solid rgba(255,255,255,.15);border-radius:7px;background:rgba(255,255,255,.08);color:inherit;font:inherit;outline:none}
   select.twk-field{padding-right:22px;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path fill='rgba(255,255,255,.5)' d='M0 0h10L5 6z'/></svg>");background-repeat:no-repeat;background-position:right 8px center}
+  select.twk-field option{background:#1a1626;color:#e8e0f0}
   .twk-slider{appearance:none;-webkit-appearance:none;width:100%;height:4px;margin:6px 0;border-radius:999px;background:rgba(255,255,255,.15);outline:none}
   .twk-slider::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#fff;border:.5px solid rgba(255,255,255,.3);box-shadow:0 1px 3px rgba(0,0,0,.4);cursor:default}
   .twk-toggle{position:relative;width:32px;height:18px;border:0;border-radius:999px;background:rgba(255,255,255,.15);transition:background .15s;cursor:default;padding:0;flex-shrink:0}
@@ -339,7 +340,7 @@ function DSHeader({palette,intensity,soundFx,rank}){
               <div style={{...dsBase.display,fontSize:'12px',color:D_LINE,letterSpacing:'0.2em'}}>FINAL COUNTDOWN</div>
               <div style={{...dsBase.display,fontSize:'64px',color:D_LINE,lineHeight:0.9,textShadow:`2px 2px 0 ${D_INK}`}}>{String(cd.days).padStart(2,'0')}</div>
               <div style={{...dsBase.display,fontSize:'20px',color:palette.secondary,letterSpacing:'0.15em'}}>GIORNI!!</div>
-              <div style={{...dsBase.mono,fontSize:'11px',color:D_LINE,marginTop:'4px'}}>{String(cd.hours).padStart(2,'0')}:{String(cd.minutes).padStart(2,'0')}:{String(cd.seconds).padStart(2,'0')}</div>
+              <div style={{...dsBase.display,fontSize:'22px',color:palette.secondary,marginTop:'6px',letterSpacing:'0.05em',textShadow:`0 0 12px ${palette.secondary}88, 2px 2px 0 ${D_INK}`}}>{String(cd.hours).padStart(2,'0')}h {String(cd.minutes).padStart(2,'0')}m {String(cd.seconds).padStart(2,'0')}s</div>
             </div>
           </BurstShapeDark>
           {soundFx&&<div style={{position:'absolute',top:'-10px',right:'-20px',...dsBase.display,fontSize:'36px',color:palette.secondary,transform:'rotate(15deg)',textShadow:`2px 2px 0 ${D_LINE}, 0 0 12px ${palette.secondary}88`,animation:'dsPulse 1.4s ease-in-out infinite'}}>BOOM!!</div>}
