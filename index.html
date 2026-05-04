@@ -294,9 +294,9 @@ function TweakToggle({label,value,onChange}){return(<div className="twk-row twk-
 function TweakSelect({label,value,options,onChange}){return(<TweakRow label={label}><select className="twk-field" value={value} onChange={e=>onChange(e.target.value)}>{options.map(o=><option key={o} value={o}>{o}</option>)}</select></TweakRow>)}
 
 // ═══════════════════════════════════════════════════════════════
-// EPIC PARTICLE ARENA — anime power-up energy effects
+// SIDE FX — effects on the lateral dark margins
 // ═══════════════════════════════════════════════════════════════
-function EpicParticleArena({ palette }) {
+function SideEffects({ palette }) {
   const canvasRef = React.useRef(null);
 
   React.useEffect(() => {
@@ -304,90 +304,88 @@ function EpicParticleArena({ palette }) {
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let raf, t = 0;
+    const dpr = window.devicePixelRatio || 1;
 
     function resize() {
-      const dpr = window.devicePixelRatio || 1;
-      canvas.width = canvas.offsetWidth * dpr;
-      canvas.height = canvas.offsetHeight * dpr;
+      canvas.width = window.innerWidth * dpr;
+      canvas.height = window.innerHeight * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
     resize();
     window.addEventListener('resize', resize);
 
-    const W = () => canvas.offsetWidth;
-    const H = () => canvas.offsetHeight;
+    const W = () => window.innerWidth;
+    const H = () => window.innerHeight;
 
-    // Particle pool
+    // Content area (where NOT to draw)
+    function contentBounds() {
+      const maxW = 1280;
+      const w = W();
+      const margin = Math.max(0, (w - maxW) / 2);
+      return { left: margin, right: w - margin };
+    }
+
+    // Only spawn in side margins
+    function sideX(side) {
+      const b = contentBounds();
+      if (side === 'left') return Math.random() * Math.max(b.left, 60);
+      return b.right + Math.random() * Math.max(W() - b.right, 60);
+    }
+
     const particles = [];
-    const trails = [];
     const slashes = [];
     const rings = [];
 
-    // Spawn energy orbs from center
-    function spawnOrbs(cx, cy) {
-      const colors = [palette.primary, palette.secondary, palette.tertiary, '#fff'];
-      for (let i = 0; i < 3; i++) {
-        const angle = Math.random() * Math.PI * 2;
-        const speed = 1 + Math.random() * 3;
-        particles.push({
-          x: cx, y: cy,
-          vx: Math.cos(angle) * speed,
-          vy: Math.sin(angle) * speed - 1,
-          size: 2 + Math.random() * 4,
-          life: 1,
-          decay: 0.008 + Math.random() * 0.012,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          type: 'orb',
-        });
-      }
-    }
-
-    // Spawn rising sparks (embers floating up)
-    function spawnEmbers() {
-      const w = W();
+    function spawnEmber(side) {
+      const colors = [palette.primary, palette.secondary, palette.tertiary];
       particles.push({
-        x: Math.random() * w,
-        y: H() + 5,
-        vx: (Math.random() - 0.5) * 0.5,
-        vy: -0.5 - Math.random() * 1.5,
-        size: 1 + Math.random() * 2.5,
-        life: 1,
-        decay: 0.004 + Math.random() * 0.004,
-        color: [palette.primary, palette.secondary, palette.tertiary][Math.floor(Math.random() * 3)],
-        type: 'ember',
+        x: sideX(side), y: H() + 5,
+        vx: (Math.random() - 0.5) * 0.4,
+        vy: -0.4 - Math.random() * 1.2,
+        size: 1.5 + Math.random() * 3,
+        life: 1, decay: 0.003 + Math.random() * 0.004,
+        color: colors[Math.floor(Math.random() * 3)],
       });
     }
 
-    // Spawn a slash trail (like sword cut)
-    function spawnSlash() {
-      const w = W(), h = H();
-      const startX = Math.random() * w;
-      const startY = 10 + Math.random() * (h - 20);
-      const angle = -0.8 + Math.random() * 1.6;
-      const len = 80 + Math.random() * 160;
+    function spawnSlash(side) {
+      const x = sideX(side);
+      const y = 50 + Math.random() * (H() - 100);
       slashes.push({
-        x: startX, y: startY,
-        angle,
-        len,
-        life: 1,
-        decay: 0.025,
+        x, y,
+        angle: -1 + Math.random() * 2,
+        len: 60 + Math.random() * 120,
+        life: 1, decay: 0.02,
         color: [palette.primary, palette.secondary, palette.tertiary][Math.floor(Math.random() * 3)],
-        width: 2 + Math.random() * 3,
+        width: 1.5 + Math.random() * 2.5,
       });
     }
 
-    // Energy ring pulse from center
-    function spawnRing() {
-      const w = W(), h = H();
+    function spawnRing(side) {
       rings.push({
-        x: w * (0.3 + Math.random() * 0.4),
-        y: h * (0.3 + Math.random() * 0.4),
-        radius: 0,
-        maxRadius: 60 + Math.random() * 80,
-        life: 1,
-        decay: 0.015,
+        x: sideX(side),
+        y: H() * (0.2 + Math.random() * 0.6),
+        radius: 0, maxRadius: 40 + Math.random() * 60,
+        life: 1, decay: 0.012,
         color: [palette.primary, palette.secondary][Math.floor(Math.random() * 2)],
       });
+    }
+
+    function spawnBurst(side) {
+      const cx = sideX(side);
+      const cy = H() * (0.2 + Math.random() * 0.6);
+      const colors = [palette.primary, palette.secondary, palette.tertiary, '#fff'];
+      for (let i = 0; i < 12; i++) {
+        const a = Math.random() * Math.PI * 2;
+        const spd = 1 + Math.random() * 2.5;
+        particles.push({
+          x: cx, y: cy,
+          vx: Math.cos(a) * spd, vy: Math.sin(a) * spd - 0.5,
+          size: 2 + Math.random() * 3.5,
+          life: 1, decay: 0.01 + Math.random() * 0.01,
+          color: colors[Math.floor(Math.random() * colors.length)],
+        });
+      }
     }
 
     let lastSlash = 0, lastRing = 0, lastBurst = 0;
@@ -397,38 +395,44 @@ function EpicParticleArena({ palette }) {
       const w = W(), h = H();
       ctx.clearRect(0, 0, w, h);
 
-      // Background glow (center energy source)
-      const cx = w / 2, cy = h / 2;
-      const pulseSize = 80 + Math.sin(t * 2) * 30;
-      const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseSize);
-      grad.addColorStop(0, palette.primary + '18');
-      grad.addColorStop(0.5, palette.secondary + '08');
-      grad.addColorStop(1, 'transparent');
-      ctx.fillStyle = grad;
-      ctx.fillRect(0, 0, w, h);
-
-      // Spawn embers continuously
-      if (Math.random() < 0.3) spawnEmbers();
-
-      // Periodic energy burst from center
-      if (t - lastBurst > 2 + Math.random() * 3) {
-        for (let i = 0; i < 20; i++) spawnOrbs(cx, cy);
-        lastBurst = t;
+      // Side glow ambience
+      const b = contentBounds();
+      if (b.left > 20) {
+        const gl = ctx.createRadialGradient(0, h * 0.5, 0, 0, h * 0.5, b.left * 1.5);
+        gl.addColorStop(0, palette.primary + '0c');
+        gl.addColorStop(1, 'transparent');
+        ctx.fillStyle = gl;
+        ctx.fillRect(0, 0, b.left, h);
+        const gr = ctx.createRadialGradient(w, h * 0.5, 0, w, h * 0.5, (w - b.right) * 1.5);
+        gr.addColorStop(0, palette.tertiary + '0c');
+        gr.addColorStop(1, 'transparent');
+        ctx.fillStyle = gr;
+        ctx.fillRect(b.right, 0, w - b.right, h);
       }
 
-      // Periodic slash
-      if (t - lastSlash > 1.5 + Math.random() * 2) {
-        spawnSlash();
+      // Continuous embers
+      if (Math.random() < 0.15) spawnEmber('left');
+      if (Math.random() < 0.15) spawnEmber('right');
+
+      // Periodic slashes
+      if (t - lastSlash > 2 + Math.random() * 2.5) {
+        spawnSlash(Math.random() < 0.5 ? 'left' : 'right');
         lastSlash = t;
       }
 
-      // Periodic ring
-      if (t - lastRing > 3 + Math.random() * 4) {
-        spawnRing();
+      // Periodic rings
+      if (t - lastRing > 4 + Math.random() * 5) {
+        spawnRing(Math.random() < 0.5 ? 'left' : 'right');
         lastRing = t;
       }
 
-      // Draw & update slashes
+      // Periodic burst
+      if (t - lastBurst > 3 + Math.random() * 4) {
+        spawnBurst(Math.random() < 0.5 ? 'left' : 'right');
+        lastBurst = t;
+      }
+
+      // Draw slashes
       for (let i = slashes.length - 1; i >= 0; i--) {
         const s = slashes[i];
         s.life -= s.decay;
@@ -437,17 +441,16 @@ function EpicParticleArena({ palette }) {
         ctx.globalAlpha = s.life * s.life;
         ctx.translate(s.x, s.y);
         ctx.rotate(s.angle);
-        // Slash gradient
-        const slashGrad = ctx.createLinearGradient(-s.len / 2, 0, s.len / 2, 0);
-        slashGrad.addColorStop(0, 'transparent');
-        slashGrad.addColorStop(0.3, s.color);
-        slashGrad.addColorStop(0.5, '#fff');
-        slashGrad.addColorStop(0.7, s.color);
-        slashGrad.addColorStop(1, 'transparent');
-        ctx.strokeStyle = slashGrad;
+        const sg = ctx.createLinearGradient(-s.len / 2, 0, s.len / 2, 0);
+        sg.addColorStop(0, 'transparent');
+        sg.addColorStop(0.3, s.color);
+        sg.addColorStop(0.5, '#fff');
+        sg.addColorStop(0.7, s.color);
+        sg.addColorStop(1, 'transparent');
+        ctx.strokeStyle = sg;
         ctx.lineWidth = s.width * s.life;
         ctx.shadowColor = s.color;
-        ctx.shadowBlur = 20 * s.life;
+        ctx.shadowBlur = 18 * s.life;
         ctx.beginPath();
         ctx.moveTo(-s.len / 2, 0);
         ctx.lineTo(s.len / 2, 0);
@@ -455,49 +458,44 @@ function EpicParticleArena({ palette }) {
         ctx.restore();
       }
 
-      // Draw & update rings
+      // Draw rings
       for (let i = rings.length - 1; i >= 0; i--) {
         const r = rings[i];
         r.life -= r.decay;
-        r.radius += (r.maxRadius - r.radius) * 0.08;
+        r.radius += (r.maxRadius - r.radius) * 0.06;
         if (r.life <= 0) { rings.splice(i, 1); continue; }
         ctx.save();
-        ctx.globalAlpha = r.life * 0.6;
+        ctx.globalAlpha = r.life * 0.5;
         ctx.strokeStyle = r.color;
-        ctx.lineWidth = 2 * r.life;
+        ctx.lineWidth = 1.5 * r.life;
         ctx.shadowColor = r.color;
-        ctx.shadowBlur = 15 * r.life;
+        ctx.shadowBlur = 12 * r.life;
         ctx.beginPath();
         ctx.arc(r.x, r.y, r.radius, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
       }
 
-      // Draw & update particles
+      // Draw particles
       for (let i = particles.length - 1; i >= 0; i--) {
         const p = particles[i];
-        p.x += p.vx;
-        p.y += p.vy;
+        p.x += p.vx; p.y += p.vy;
+        p.vx *= 0.99; p.vy *= 0.99;
         p.life -= p.decay;
-        if (p.type === 'orb') {
-          p.vx *= 0.98;
-          p.vy *= 0.98;
-        }
         if (p.life <= 0 || p.y < -10) { particles.splice(i, 1); continue; }
         ctx.save();
         ctx.globalAlpha = p.life;
         ctx.fillStyle = p.color;
         ctx.shadowColor = p.color;
-        ctx.shadowBlur = p.size * 4;
+        ctx.shadowBlur = p.size * 3;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
         ctx.fill();
-        // Bright core
         if (p.size > 3) {
-          ctx.globalAlpha = p.life * 0.8;
+          ctx.globalAlpha = p.life * 0.7;
           ctx.fillStyle = '#fff';
           ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size * p.life * 0.3, 0, Math.PI * 2);
+          ctx.arc(p.x, p.y, p.size * p.life * 0.25, 0, Math.PI * 2);
           ctx.fill();
         }
         ctx.restore();
@@ -511,35 +509,10 @@ function EpicParticleArena({ palette }) {
   }, [palette]);
 
   return (
-    <div style={{ width: '100%', height: '100px', marginBottom: '16px', position: 'relative', opacity: 0.85 }}>
-      <canvas ref={canvasRef} style={{ width: '100%', height: '100%', display: 'block' }}/>
-    </div>
-  );
-}
-
-// ═══════════════════════════════════════════════════════════════
-// FLOATING PARTICLES (CSS-only, reliable)
-// ═══════════════════════════════════════════════════════════════
-function FloatingParticles({ palette }) {
-  const particles = React.useMemo(() =>
-    Array.from({ length: 18 }, (_, i) => ({
-      id: i, left: Math.random() * 100, delay: Math.random() * 12,
-      dur: 10 + Math.random() * 10, size: 2 + Math.random() * 3,
-      drift: (Math.random() - 0.5) * 80,
-      color: [palette.primary, palette.secondary, palette.tertiary][i % 3],
-    })), [palette]);
-  return (
-    <div style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0, overflow: 'hidden' }}>
-      {particles.map(p => (
-        <div key={p.id} style={{
-          position: 'absolute', bottom: '-5px', left: p.left + '%',
-          width: p.size + 'px', height: p.size + 'px', borderRadius: '50%',
-          background: p.color, boxShadow: '0 0 ' + (p.size * 3) + 'px ' + p.color + '88',
-          animation: 'particleFloat ' + p.dur + 's ' + p.delay + 's linear infinite',
-          '--drift': p.drift + 'px',
-        }}/>
-      ))}
-    </div>
+    <canvas ref={canvasRef} style={{
+      position: 'fixed', inset: 0, width: '100%', height: '100%',
+      pointerEvents: 'none', zIndex: 0,
+    }}/>
   );
 }
 
@@ -1000,8 +973,8 @@ function DarkShonenApp(){
     <div style={{minHeight:'100vh',background:D_INK,backgroundImage:pageBg,color:D_LINE,...dsBase.body}}>
       <style>{`@keyframes dsPulse{0%,100%{transform:rotate(15deg) scale(1)}50%{transform:rotate(15deg) scale(1.12)}}`}</style>
 
-      {/* Floating Particles */}
-      <FloatingParticles palette={palette}/>
+      {/* Side effects — slashes, sparks, rings on lateral margins */}
+      <SideEffects palette={palette}/>
 
       <div style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
 
@@ -1023,9 +996,6 @@ function DarkShonenApp(){
         </div>}
 
         <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
-
-        {/* Epic Particle Arena */}
-        <EpicParticleArena palette={palette}/>
 
         <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
         <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
