@@ -14,6 +14,32 @@
   *::-webkit-scrollbar-track{background:#0a0810}
   *::-webkit-scrollbar-thumb{background:#2a2238;border-radius:6px}
 
+  /* ── Mobile responsive ── */
+  @media(max-width:768px){
+    .ds-stats-grid{grid-template-columns:repeat(2,1fr) !important}
+    .ds-split{grid-template-columns:1fr !important}
+    .ds-milestones{grid-template-columns:repeat(4,1fr) !important}
+    .ds-header-grid{grid-template-columns:1fr !important; text-align:center}
+    .ds-header-grid>div:last-child{justify-self:center; margin-top:12px}
+    .ds-match-inner{grid-template-columns:42px 1fr 50px !important; gap:6px !important}
+    .ds-match-inner>div:nth-child(1){font-size:18px !important}
+    .ds-container{padding:16px !important}
+    .ds-title{font-size:clamp(36px,12vw,70px) !important; -webkit-text-stroke:2px #f5f0e8 !important}
+    .ds-subtitle{font-size:18px !important}
+    .ds-burst{width:160px !important; height:160px !important}
+    .ds-burst-days{font-size:48px !important}
+    .ds-burst-hms{font-size:16px !important}
+    .ds-champ-grid{grid-template-columns:1fr !important}
+    .ds-vote-buttons{flex-direction:column !important}
+    .ds-vote-buttons>input{width:100% !important}
+  }
+  @media(max-width:480px){
+    .ds-stats-grid{grid-template-columns:1fr 1fr !important; gap:8px !important}
+    .ds-milestones{grid-template-columns:repeat(3,1fr) !important}
+    .ds-burst{width:130px !important; height:130px !important}
+    .ds-burst-days{font-size:40px !important}
+  }
+
   /* ── Animations ── */
   @keyframes fadeInUp{0%{transform:translateY(40px);opacity:0}100%{transform:translateY(0);opacity:1}}
   @keyframes particleFloat{
@@ -557,25 +583,25 @@ function DSHeader({palette,intensity,soundFx,rank}){
         </defs>
         <rect width="100%" height="100%" fill="url(#diagStripeDark)"/><rect width="100%" height="100%" fill="url(#darkVignette)"/>
       </svg>
-      <div style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:'1fr auto',gap:'24px',alignItems:'center',minHeight:'280px',padding:'20px'}}>
+      <div className="ds-header-grid" style={{position:'relative',zIndex:1,display:'grid',gridTemplateColumns:'1fr auto',gap:'24px',alignItems:'center',minHeight:'280px',padding:'20px'}}>
         <div>
           <div style={{display:'inline-block',background:palette.secondary,color:D_INK,...dsBase.display,fontSize:'14px',letterSpacing:'0.3em',padding:'4px 14px',transform:'rotate(-2deg)',boxShadow:`0 0 ${16*intensity}px ${palette.secondary}66`}}>
             {tierDisplay} // RANKED SOLO
           </div>
-          <h1 onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{...dsBase.display,fontSize:'clamp(60px,8vw,120px)',margin:'8px 0 0',lineHeight:0.85,color:D_INK,WebkitTextStroke:`4px ${D_LINE}`,textShadow:`8px 8px 0 ${palette.primary}, 12px 12px 0 ${D_LINE}, 0 0 ${32*intensity}px ${palette.primary}66`,transform:hover?'rotate(-2deg) scale(1.02)':'rotate(-1deg)',transition:'transform .3s cubic-bezier(.3,1.6,.4,1)',cursor:'default'}}>
+          <h1 className="ds-title" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{...dsBase.display,fontSize:'clamp(60px,8vw,120px)',margin:'8px 0 0',lineHeight:0.85,color:D_INK,WebkitTextStroke:`4px ${D_LINE}`,textShadow:`8px 8px 0 ${palette.primary}, 12px 12px 0 ${D_LINE}, 0 0 ${32*intensity}px ${palette.primary}66`,transform:hover?'rotate(-2deg) scale(1.02)':'rotate(-1deg)',transition:'transform .3s cubic-bezier(.3,1.6,.4,1)',cursor:'default'}}>
             SPROPORZIONATO!
           </h1>
-          <div style={{...dsBase.hand,fontSize:'26px',color:D_INK,marginTop:'12px',background:palette.secondary,display:'inline-block',padding:'4px 16px',border:`3px solid ${D_LINE}`,transform:'rotate(1deg)',boxShadow:`4px 4px 0 ${D_LINE}, 0 0 ${20*intensity}px ${palette.secondary}55`}}>
+          <div className="ds-subtitle" style={{...dsBase.hand,fontSize:'26px',color:D_INK,marginTop:'12px',background:palette.secondary,display:'inline-block',padding:'4px 16px',border:`3px solid ${D_LINE}`,transform:'rotate(1deg)',boxShadow:`4px 4px 0 ${D_LINE}, 0 0 ${20*intensity}px ${palette.secondary}55`}}>
             verso il MASTER!! {"\u2192"} la corsa finale
           </div>
         </div>
         <div style={{position:'relative'}}>
           <BurstShapeDark size={220} color={palette.primary}>
-            <div>
+            <div className="ds-burst">
               <div style={{...dsBase.display,fontSize:'12px',color:D_LINE,letterSpacing:'0.2em'}}>FINAL COUNTDOWN</div>
-              <div style={{...dsBase.display,fontSize:'64px',color:D_LINE,lineHeight:0.9,textShadow:`2px 2px 0 ${D_INK}`}}>{String(cd.days).padStart(2,'0')}</div>
+              <div className="ds-burst-days" style={{...dsBase.display,fontSize:'64px',color:D_LINE,lineHeight:0.9,textShadow:`2px 2px 0 ${D_INK}`}}>{String(cd.days).padStart(2,'0')}</div>
               <div style={{...dsBase.display,fontSize:'20px',color:palette.secondary,letterSpacing:'0.15em'}}>GIORNI!!</div>
-              <div style={{...dsBase.display,fontSize:'22px',color:palette.secondary,marginTop:'6px',letterSpacing:'0.05em',textShadow:`0 0 12px ${palette.secondary}88, 2px 2px 0 ${D_INK}`}}>{String(cd.hours).padStart(2,'0')}h {String(cd.minutes).padStart(2,'0')}m {String(cd.seconds).padStart(2,'0')}s</div>
+              <div className="ds-burst-hms" style={{...dsBase.display,fontSize:'22px',color:palette.secondary,marginTop:'6px',letterSpacing:'0.05em',textShadow:`0 0 12px ${palette.secondary}88, 2px 2px 0 ${D_INK}`}}>{String(cd.hours).padStart(2,'0')}h {String(cd.minutes).padStart(2,'0')}m {String(cd.seconds).padStart(2,'0')}s</div>
             </div>
           </BurstShapeDark>
           {soundFx&&<div style={{position:'absolute',top:'-10px',right:'-20px',...dsBase.display,fontSize:'36px',color:palette.secondary,transform:'rotate(15deg)',textShadow:`2px 2px 0 ${D_LINE}, 0 0 12px ${palette.secondary}88`,animation:'dsPulse 1.4s ease-in-out infinite'}}>BOOM!!</div>}
@@ -594,7 +620,7 @@ function DSStats({palette,intensity,halftone,showStreak,tiltAmt,d}){
     {l:'LP TO MASTER',v:String(d.lpToMaster),s:d.lpToMaster<=200?'quasi!!':'final boss approach',c:'#a86bff',t:1},
   ];
   return(
-    <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'14px',marginBottom:'24px'}}>
+    <div className="ds-stats-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'14px',marginBottom:'24px'}}>
       {items.map((s,i)=>(
         <MangaPanelDark key={i} tilt={s.t*tiltAmt} accent={s.c} intensity={intensity} halftone={halftone} style={{padding:'14px 16px',background:s.hot?D_PAPER_2:D_PAPER}}>
           {s.hot&&halftone&&<HalftoneDark opacity={0.1} color={s.c}/>}
@@ -644,7 +670,7 @@ function DSMilestones({palette,intensity,tiltAmt,d}){
       <div style={{...dsBase.display,fontSize:'22px',marginBottom:'8px',display:'flex',alignItems:'baseline',gap:'12px',color:D_LINE}}>
         {"\u2605"} MILESTONES <span style={{...dsBase.hand,fontSize:'18px',color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>{d.milestones.filter(m=>m.status==='done'||m.status==='current').length} di {d.milestones.length} superate!!</span>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:`repeat(${d.milestones.length},1fr)`,gap:'8px'}}>
+      <div className="ds-milestones" style={{display:'grid',gridTemplateColumns:`repeat(${d.milestones.length},1fr)`,gap:'8px'}}>
         {d.milestones.map((m,i)=>{
           const done=m.status==='done';const current=m.status==='current';const goal=m.status==='goal'&&d.currentAbs>=MASTER_ABS;
           const isEmerald=m.tier.startsWith('EMERALD');const isDiamond=m.tier.startsWith('DIAMOND');const isMaster=m.tier==='MASTER';
@@ -732,7 +758,7 @@ function DSMatchCard({m,idx,palette,intensity,speedLines,compact}){
   return(
     <div onClick={()=>setOpen(!open)} style={{position:'relative',background:win?D_PAPER:'#2a1218',border:`3px solid ${D_LINE}`,boxShadow:`4px 4px 0 ${D_LINE}, 0 0 ${(open?24:16)*intensity}px ${win?palette.tertiary:palette.primary}33`,padding:compact?'8px 12px':'12px 14px',transform:`rotate(${(idx%3-1)*0.4}deg) ${open?'scale(1.01)':''}`,cursor:'pointer',transition:'transform .2s, box-shadow .2s'}}>
       {win&&speedLines&&<SpeedLinesDark color="rgba(255,255,255,0.04)"/>}
-      <div style={{position:'relative',display:'grid',gridTemplateColumns:'52px 1fr 60px',gap:'10px',alignItems:'center'}}>
+      <div className="ds-match-inner" style={{position:'relative',display:'grid',gridTemplateColumns:'52px 1fr 60px',gap:'10px',alignItems:'center'}}>
         <div style={{...dsBase.display,fontSize:compact?'20px':'24px',textAlign:'center',color:D_INK,background:win?palette.tertiary:palette.primary,border:`2px solid ${D_LINE}`,padding:'4px 0',boxShadow:`2px 2px 0 ${D_LINE}, 0 0 ${12*intensity}px ${win?palette.tertiary:palette.primary}88`,transform:'rotate(-3deg)'}}>{win?'WIN':'KO'}</div>
         <div>
           <div style={{...dsBase.display,fontSize:compact?'18px':'22px',color:D_LINE,lineHeight:1}}>
@@ -907,7 +933,7 @@ function DSVoting({ palette, intensity, halftone }) {
         <div style={{ ...dsBase.display, fontSize: '14px', color: D_DIM, marginBottom: '10px', letterSpacing: '0.1em' }}>
           {myVote ? `HAI VOTATO: ${myVote === 'yes' ? 'CE LA FA' : 'NON CE LA FA'} (puoi cambiare)` : 'VOTA ORA!'}
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+        <div className="ds-vote-buttons" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input
             type="text"
             placeholder="Il tuo nome..."
@@ -976,7 +1002,7 @@ function DarkShonenApp(){
       {/* Side effects — slashes, sparks, rings on lateral margins */}
       <SideEffects palette={palette}/>
 
-      <div style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
+      <div className="ds-container" style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
 
         {/* Update bar */}
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px',...dsBase.mono,fontSize:'11px',color:D_DIM}}>
@@ -1001,7 +1027,7 @@ function DarkShonenApp(){
         <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
         <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
 
-        <div style={{display:'grid',gridTemplateColumns:'7fr 5fr',gap:'16px',marginBottom:'24px'}}>
+        <div className="ds-split" style={{display:'grid',gridTemplateColumns:'7fr 5fr',gap:'16px',marginBottom:'24px'}}>
           <MangaPanelDark accent={palette.tertiary} intensity={intensity} halftone={halftone} style={{padding:'18px 20px'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'8px'}}>
               <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>POWER CHART <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.totalGames} BATTLES</span></div>
@@ -1028,7 +1054,7 @@ function DarkShonenApp(){
           <div style={{...dsBase.display,fontSize:'24px',marginBottom:'12px',color:D_LINE}}>
             CHAMPION ROSTER <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.mainRole ? ROLE_NAMES[d.mainRole.role] : '?'} MAIN</span>
           </div>
-          <div style={{display:'grid',gap:'10px',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))'}}>
+          <div className="ds-champ-grid" style={{display:'grid',gap:'10px',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))'}}>
             {d.champStats.map(s=><DSChampCard key={s.name} s={s} palette={palette} intensity={intensity} halftone={halftone}/>)}
           </div>
         </MangaPanelDark>
