@@ -798,31 +798,38 @@ function DSMatchCard({m,idx,palette,intensity,speedLines,compact}){
               textShadow:`0 0 6px ${team.win?palette.tertiary:palette.primary}44`}}>
               {team.win?'\u2605 VITTORIA':'\u2716 SCONFITTA'} {"\u00B7"} TEAM {ti+1}
             </div>
-            <div style={{display:'grid',gap:'3px'}}>
+            {/* Column headers */}
+            <div style={{display:'grid',gridTemplateColumns:'minmax(90px,1.5fr) 70px 55px 55px 55px 42px',gap:'6px',alignItems:'center',padding:'2px 8px',...dsBase.display,fontSize:'9px',letterSpacing:'0.1em',color:D_DIM}}>
+              <div>CAMPIONE</div><div>KDA</div><div>CS</div><div>DMG</div><div>GOLD</div><div>LV</div>
+            </div>
+            <div style={{display:'grid',gap:'2px'}}>
               {team.players.map((p, pi) => {
                 const isMe = p.isTarget;
                 const kda = `${p.kills}/${p.deaths}/${p.assists}`;
+                const kdaRatio = ((p.kills+p.assists)/Math.max(1,p.deaths));
+                const kdaColor = kdaRatio >= 5 ? palette.secondary : kdaRatio >= 3 ? palette.tertiary : kdaRatio >= 1.5 ? D_LINE : palette.primary;
                 return (
                   <div key={pi} style={{
-                    display:'grid',gridTemplateColumns:'minmax(90px,1fr) 65px 50px 50px 50px 40px',gap:'6px',alignItems:'center',
-                    padding:'4px 8px',
-                    background:isMe?'rgba(255,210,58,0.1)':D_INK,
-                    border:isMe?`1px solid ${palette.secondary}44`:`1px solid ${D_INK}`,
+                    display:'grid',gridTemplateColumns:'minmax(90px,1.5fr) 70px 55px 55px 55px 42px',gap:'6px',alignItems:'center',
+                    padding:'5px 8px',
+                    background:isMe?'rgba(255,210,58,0.12)':pi%2===0?D_INK:'rgba(255,255,255,0.02)',
+                    border:isMe?`1.5px solid ${palette.secondary}55`:'1.5px solid transparent',
+                    borderRadius:'2px',
                     ...dsBase.mono,fontSize:'11px',color:D_LINE,
                   }}>
                     <div style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
-                      <span style={{...dsBase.display,fontSize:'12px',color:isMe?palette.secondary:D_LINE}}>
+                      <span style={{...dsBase.display,fontSize:'13px',color:isMe?palette.secondary:D_LINE}}>
                         {fmtChamp(p.champ)}
                       </span>
-                      <span style={{color:D_DIM,marginLeft:'4px',fontSize:'10px'}}>
+                      <span style={{color:isMe?palette.secondary+'aa':D_DIM,marginLeft:'5px',fontSize:'10px'}}>
                         {p.name}{isMe?' \u25C6':''}
                       </span>
                     </div>
-                    <div style={{color:p.kills>=10?palette.secondary:D_LINE,fontWeight:p.kills>=10?700:400}}>{kda}</div>
-                    <div style={{color:D_DIM}}>{p.cs}cs</div>
-                    <div style={{color:D_DIM}}>{(p.damageDealt/1000).toFixed(1)}k</div>
-                    <div style={{color:D_DIM}}>{(p.goldEarned/1000).toFixed(1)}g</div>
-                    <div style={{color:D_DIM}}>lv{p.level}</div>
+                    <div style={{color:kdaColor,fontWeight:600,fontSize:'12px'}}>{kda}</div>
+                    <div style={{color:'#b8b0c8'}}>{p.cs}</div>
+                    <div style={{color:p.damageDealt>=30000?'#ff9f43':p.damageDealt>=20000?'#b8b0c8':'#7c7088'}}>{(p.damageDealt/1000).toFixed(1)}k</div>
+                    <div style={{color:'#b8b0c8'}}>{(p.goldEarned/1000).toFixed(1)}k</div>
+                    <div style={{color:'#7c7088'}}>{p.level}</div>
                   </div>
                 );
               })}
