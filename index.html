@@ -361,70 +361,38 @@ function ChampionSplashSides() {
 
   return (
     <>
-      {/* Gwen — left side, large and visible */}
+      {/* Gwen — left side, PNG with transparency */}
       <div style={{
-        position: 'fixed', top: 0, left: 0, width: `calc(${sideWidth} + 80px)`, height: '100vh',
-        pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
+        position: 'fixed', bottom: 0, left: 0,
+        pointerEvents: 'none', zIndex: 0,
+        transform: `translateY(${-parallax}px)`,
       }}>
-        <div style={{
-          position: 'absolute', top: 0, left: 0, width: '100%', height: '120%',
-          transform: `translateY(${-parallax}px)`,
-        }}>
-          <img
-            src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Gwen_0.jpg"
-            alt=""
-            style={{
-              position: 'absolute',
-              top: '-5%', right: '-60%',
-              height: '105%', width: 'auto',
-              objectFit: 'cover',
-              opacity: 0.75,
-              filter: 'saturate(1.2) brightness(0.85)',
-            }}
-          />
-        </div>
-        {/* Fade only toward center content */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to left, #0a0810 0%, rgba(10,8,16,0.6) 15%, transparent 50%)',
-        }}/>
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%',
-          background: 'linear-gradient(to top, #0a0810, transparent)',
-        }}/>
+        <img
+          src="assets/gwen.png"
+          alt=""
+          style={{
+            height: '90vh', width: 'auto',
+            opacity: 0.85,
+            filter: 'brightness(0.9) drop-shadow(0 0 30px rgba(100,150,255,0.3))',
+          }}
+        />
       </div>
 
-      {/* Ambessa — right side, large and visible */}
+      {/* Ambessa — right side, PNG with transparency */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, width: `calc(${sideWidth} + 80px)`, height: '100vh',
-        pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
+        position: 'fixed', bottom: 0, right: 0,
+        pointerEvents: 'none', zIndex: 0,
+        transform: `translateY(${-parallax * 0.8}px)`,
       }}>
-        <div style={{
-          position: 'absolute', top: 0, right: 0, width: '100%', height: '120%',
-          transform: `translateY(${-parallax * 0.8}px)`,
-        }}>
-          <img
-            src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ambessa_0.jpg"
-            alt=""
-            style={{
-              position: 'absolute',
-              top: '-5%', left: '-60%',
-              height: '105%', width: 'auto',
-              objectFit: 'cover',
-              opacity: 0.75,
-              filter: 'saturate(1.3) brightness(0.8)',
-            }}
-          />
-        </div>
-        {/* Fade only toward center content */}
-        <div style={{
-          position: 'absolute', inset: 0,
-          background: 'linear-gradient(to right, #0a0810 0%, rgba(10,8,16,0.6) 15%, transparent 50%)',
-        }}/>
-        <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%',
-          background: 'linear-gradient(to top, #0a0810, transparent)',
-        }}/>
+        <img
+          src="assets/ambessa.png"
+          alt=""
+          style={{
+            height: '90vh', width: 'auto',
+            opacity: 0.85,
+            filter: 'brightness(0.85) drop-shadow(0 0 30px rgba(255,50,80,0.3))',
+          }}
+        />
       </div>
     </>
   );
