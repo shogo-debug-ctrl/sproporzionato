@@ -1,0 +1,56 @@
+name: Cast Vote
+
+on:
+  workflow_dispatch:
+    inputs:
+      voter_name:
+        description: 'Voter name'
+        required: true
+      vote:
+        description: 'Vote (yes or no)'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  vote:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Update votes
+        run: |
+          VOTES_FILE="votes.json"
+          NAME="${{ github.event.inputs.voter_name }}"
+          VOTE="${{ github.event.inputs.vote }}"
+
+          # Read current votes
+          CURRENT=$(cat "$VOTES_FILE")
+
+          # Update with node
+          node -e "
+            const fs = require('fs');
+            const data = JSON.parse(fs.readFileSync('$VOTES_FILE', 'utf8'));
+            data.votes = data.votes || {};
+            data.votes['$NAME'] = '$VOTE';
+            const entries = Object.values(data.votes);
+            data.total_yes = entries.filter(v => v === 'yes').length;
+            data.total_no = entries.filter(v => v === 'no').length;
+            fs.writeFileSync('$VOTES_FILE', JSON.stringify(data, null, 2));
+          "
+
+          echo "Vote recorded: $NAME -> $VOTE"
+          cat "$VOTES_FILE"
+
+      - name: Commit
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add votes.json
+          if git diff --staged --quiet; then
+            echo "No changes"
+          else
+            git commit -m "Vote: ${{ github.event.inputs.voter_name }} -> ${{ github.event.inputs.vote }}"
+            git push
+          fi

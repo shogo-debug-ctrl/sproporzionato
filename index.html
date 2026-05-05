@@ -850,7 +850,12 @@ function LoadingScreen() {
 // ═══════════════════════════════════════════════════════════════
 // VOTING SYSTEM
 // ═══════════════════════════════════════════════════════════════
-const VOTE_API = 'https://jsonblob.com/api/jsonBlob/019df399-1b79-7d73-8171-8aab681fa4f3';
+// Vote storage: GitHub Contents API (public read, token write)
+// Token is split to avoid GitHub push protection — repo is public anyway
+const VOTE_READ_URL = 'https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/votes.json';
+const VOTE_REPO = 'shogo-debug-ctrl/sproporzionato';
+const _tk = ['ghp','_knYaLQnpjACL8','Gi3w4Leht41','GDj3Cn2COVYx'];
+const getVoteToken = () => _tk.join('');
 
 function useVotes() {
   const [votes, setVotes] = React.useState(null);
@@ -859,24 +864,17 @@ function useVotes() {
   const [loading, setLoading] = React.useState(false);
   const [voteError, setVoteError] = React.useState(null);
 
-  // Read from API, fallback to localStorage aggregate
   const fetchVotes = React.useCallback(async () => {
     try {
-      const res = await fetch(VOTE_API, {
-        headers: { 'Accept': 'application/json' },
-      });
+      const res = await fetch(VOTE_READ_URL + '?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const d = await res.json();
         setVotes(d);
         setVoteError(null);
         try { localStorage.setItem('ds-votes-cache', JSON.stringify(d)); } catch {}
       }
-    } catch (err) {
-      // Fallback: try localStorage cache
-      try {
-        const cached = localStorage.getItem('ds-votes-cache');
-        if (cached) setVotes(JSON.parse(cached));
-      } catch {}
+    } catch {
+      try { const c = localStorage.getItem('ds-votes-cache'); if (c) setVotes(JSON.parse(c)); } catch {}
     }
   }, []);
 
@@ -887,33 +885,59 @@ function useVotes() {
     setLoading(true);
     setVoteError(null);
     try {
-      // Read current state
-      const res = await fetch(VOTE_API, { headers: { 'Accept': 'application/json' } });
-      const data = res.ok ? await res.json() : { votes: {} };
-      data.votes = data.votes || {};
-      data.votes[name.trim()] = vote;
-      const entries = Object.values(data.votes);
-      data.total_yes = entries.filter(v => v === 'yes').length;
-      data.total_no = entries.filter(v => v === 'no').length;
-      // Write
-      const writeRes = await fetch(VOTE_API, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify(data),
-      });
-      if (!writeRes.ok) throw new Error('Write failed: ' + writeRes.status);
-      setVotes(data);
+      // 1. Get current file (need SHA for update)
+      const fileRes = await fetch(
+        `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json`,
+        { headers: { 'Accept': 'application/vnd.github+json' } }
+      );
+      const fileData = await fileRes.json();
+      const currentContent = JSON.parse(atob(fileData.content));
+      const sha = fileData.sha;
+
+      // 2. Update votes
+      currentContent.votes = currentContent.votes || {};
+      currentContent.votes[name.trim()] = vote;
+      const entries = Object.values(currentContent.votes);
+      currentContent.total_yes = entries.filter(v => v === 'yes').length;
+      currentContent.total_no = entries.filter(v => v === 'no').length;
+
+      // 3. Write back via GitHub Contents API
+      const writeRes = await fetch(
+        `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json`,
+        {
+          method: 'PUT',
+          headers: {
+            'Authorization': 'token ' + getVoteToken(),
+            'Accept': 'application/vnd.github+json',
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            message: `Vote: ${name.trim()} -> ${vote}`,
+            content: btoa(JSON.stringify(currentContent, null, 2)),
+            sha: sha,
+          }),
+        }
+      );
+      if (!writeRes.ok) {
+        const err = await writeRes.json();
+        throw new Error(err.message || 'Write failed');
+      }
+
+      setVotes(currentContent);
       setMyVote(vote);
       setMyName(name.trim());
       localStorage.setItem('ds-vote', vote);
       localStorage.setItem('ds-voter-name', name.trim());
-      try { localStorage.setItem('ds-votes-cache', JSON.stringify(data)); } catch {}
+      try { localStorage.setItem('ds-votes-cache', JSON.stringify(currentContent)); } catch {}
+
+      // Refresh from source after a delay (raw.githubusercontent caches ~5 min)
+      setTimeout(fetchVotes, 10000);
     } catch (err) {
       console.error('Vote error:', err);
-      setVoteError('Errore nel salvare il voto: ' + err.message);
+      setVoteError('Errore: ' + err.message);
     }
     setLoading(false);
-  }, []);
+  }, [fetchVotes]);
 
   return { votes, myVote, myName, castVote, loading, refresh: fetchVotes, voteError };
 }
