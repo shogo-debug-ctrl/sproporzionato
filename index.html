@@ -361,83 +361,69 @@ function ChampionSplashSides() {
 
   return (
     <>
-      {/* Gwen — left side */}
+      {/* Gwen — left side, large and visible */}
       <div style={{
-        position: 'fixed', top: 0, left: 0, width: sideWidth, height: '100vh',
+        position: 'fixed', top: 0, left: 0, width: `calc(${sideWidth} + 80px)`, height: '100vh',
         pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
       }}>
         <div style={{
           position: 'absolute', top: 0, left: 0, width: '100%', height: '120%',
           transform: `translateY(${-parallax}px)`,
-          transition: 'transform 0.1s linear',
         }}>
           <img
             src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Gwen_0.jpg"
             alt=""
             style={{
               position: 'absolute',
-              top: '-10%', right: '-40%',
-              height: '110%', width: 'auto',
+              top: '-5%', right: '-60%',
+              height: '105%', width: 'auto',
               objectFit: 'cover',
-              opacity: 0.35,
-              filter: 'saturate(1.2) brightness(0.8)',
-              maskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 70%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 30%, black 70%, transparent 100%)',
+              opacity: 0.75,
+              filter: 'saturate(1.2) brightness(0.85)',
             }}
           />
         </div>
-        {/* Gradient overlay to blend with background */}
+        {/* Fade only toward center content */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to left, #0a0810 0%, transparent 40%, transparent 60%, rgba(10,8,16,0.8) 100%)',
+          background: 'linear-gradient(to left, #0a0810 0%, rgba(10,8,16,0.6) 15%, transparent 50%)',
         }}/>
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%',
           background: 'linear-gradient(to top, #0a0810, transparent)',
-        }}/>
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: '15%',
-          background: 'linear-gradient(to bottom, #0a0810, transparent)',
         }}/>
       </div>
 
-      {/* Ambessa — right side */}
+      {/* Ambessa — right side, large and visible */}
       <div style={{
-        position: 'fixed', top: 0, right: 0, width: sideWidth, height: '100vh',
+        position: 'fixed', top: 0, right: 0, width: `calc(${sideWidth} + 80px)`, height: '100vh',
         pointerEvents: 'none', zIndex: 0, overflow: 'hidden',
       }}>
         <div style={{
           position: 'absolute', top: 0, right: 0, width: '100%', height: '120%',
           transform: `translateY(${-parallax * 0.8}px)`,
-          transition: 'transform 0.1s linear',
         }}>
           <img
             src="https://ddragon.leagueoflegends.com/cdn/img/champion/splash/Ambessa_0.jpg"
             alt=""
             style={{
               position: 'absolute',
-              top: '-10%', left: '-40%',
-              height: '110%', width: 'auto',
+              top: '-5%', left: '-60%',
+              height: '105%', width: 'auto',
               objectFit: 'cover',
-              opacity: 0.4,
-              filter: 'saturate(1.3) brightness(0.75)',
-              maskImage: 'linear-gradient(to left, transparent 0%, black 30%, black 70%, transparent 100%)',
-              WebkitMaskImage: 'linear-gradient(to left, transparent 0%, black 30%, black 70%, transparent 100%)',
+              opacity: 0.75,
+              filter: 'saturate(1.3) brightness(0.8)',
             }}
           />
         </div>
-        {/* Gradient overlay */}
+        {/* Fade only toward center content */}
         <div style={{
           position: 'absolute', inset: 0,
-          background: 'linear-gradient(to right, #0a0810 0%, transparent 40%, transparent 60%, rgba(10,8,16,0.8) 100%)',
+          background: 'linear-gradient(to right, #0a0810 0%, rgba(10,8,16,0.6) 15%, transparent 50%)',
         }}/>
         <div style={{
-          position: 'absolute', bottom: 0, left: 0, right: 0, height: '30%',
+          position: 'absolute', bottom: 0, left: 0, right: 0, height: '20%',
           background: 'linear-gradient(to top, #0a0810, transparent)',
-        }}/>
-        <div style={{
-          position: 'absolute', top: 0, left: 0, right: 0, height: '15%',
-          background: 'linear-gradient(to bottom, #0a0810, transparent)',
         }}/>
       </div>
     </>
