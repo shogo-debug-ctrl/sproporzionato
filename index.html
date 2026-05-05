@@ -130,7 +130,9 @@ function useLiveData() {
 
   const fetchData = React.useCallback(async () => {
     try {
-      const res = await fetch('data.json?t=' + Date.now());
+      // Fetch from raw GitHub to bypass Pages CDN cache
+      const rawUrl = 'https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/data.json';
+      const res = await fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       setData(json);
@@ -138,6 +140,18 @@ function useLiveData() {
       setLastUpdate(new Date());
       try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
     } catch (err) {
+      // Fallback to local data.json
+      try {
+        const res2 = await fetch('data.json?t=' + Date.now());
+        if (res2.ok) {
+          const json = await res2.json();
+          setData(json);
+          setError(null);
+          setLastUpdate(new Date());
+          try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
+          return;
+        }
+      } catch {}
       setError(err.message);
       if (!data) {
         try {
@@ -843,41 +857,69 @@ function useVotes() {
   const [myVote, setMyVote] = React.useState(() => localStorage.getItem('ds-vote'));
   const [myName, setMyName] = React.useState(() => localStorage.getItem('ds-voter-name') || '');
   const [loading, setLoading] = React.useState(false);
+  const [voteError, setVoteError] = React.useState(null);
 
+  // Read from API, fallback to localStorage aggregate
   const fetchVotes = React.useCallback(async () => {
     try {
-      const res = await fetch(VOTE_API);
-      if (res.ok) setVotes(await res.json());
-    } catch {}
+      const res = await fetch(VOTE_API, {
+        headers: { 'Accept': 'application/json' },
+      });
+      if (res.ok) {
+        const d = await res.json();
+        setVotes(d);
+        setVoteError(null);
+        try { localStorage.setItem('ds-votes-cache', JSON.stringify(d)); } catch {}
+      }
+    } catch (err) {
+      // Fallback: try localStorage cache
+      try {
+        const cached = localStorage.getItem('ds-votes-cache');
+        if (cached) setVotes(JSON.parse(cached));
+      } catch {}
+    }
   }, []);
 
-  React.useEffect(() => { fetchVotes(); }, [fetchVotes]);
+  React.useEffect(() => { fetchVotes(); const t = setInterval(fetchVotes, 30000); return () => clearInterval(t); }, [fetchVotes]);
 
   const castVote = React.useCallback(async (name, vote) => {
     if (!name.trim()) return;
     setLoading(true);
+    setVoteError(null);
     try {
-      const res = await fetch(VOTE_API);
+      // Read current state
+      const res = await fetch(VOTE_API, { headers: { 'Accept': 'application/json' } });
       const data = res.ok ? await res.json() : { votes: {} };
+      data.votes = data.votes || {};
       data.votes[name.trim()] = vote;
       const entries = Object.values(data.votes);
       data.total_yes = entries.filter(v => v === 'yes').length;
       data.total_no = entries.filter(v => v === 'no').length;
-      await fetch(VOTE_API, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) });
+      // Write
+      const writeRes = await fetch(VOTE_API, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!writeRes.ok) throw new Error('Write failed: ' + writeRes.status);
       setVotes(data);
       setMyVote(vote);
       setMyName(name.trim());
       localStorage.setItem('ds-vote', vote);
       localStorage.setItem('ds-voter-name', name.trim());
-    } catch (err) { console.error('Vote error:', err); }
+      try { localStorage.setItem('ds-votes-cache', JSON.stringify(data)); } catch {}
+    } catch (err) {
+      console.error('Vote error:', err);
+      setVoteError('Errore nel salvare il voto: ' + err.message);
+    }
     setLoading(false);
   }, []);
 
-  return { votes, myVote, myName, castVote, loading, refresh: fetchVotes };
+  return { votes, myVote, myName, castVote, loading, refresh: fetchVotes, voteError };
 }
 
 function DSVoting({ palette, intensity, halftone }) {
-  const { votes, myVote, myName, castVote, loading, refresh } = useVotes();
+  const { votes, myVote, myName, castVote, loading, refresh, voteError } = useVotes();
   const [name, setName] = React.useState(myName);
   const totalYes = votes?.total_yes || 0;
   const totalNo = votes?.total_no || 0;
@@ -931,7 +973,8 @@ function DSVoting({ palette, intensity, halftone }) {
       {/* Vote form */}
       <div style={{ background: D_INK, border: `3px solid ${D_LINE}`, padding: '14px 16px', boxShadow: `3px 3px 0 ${D_LINE}` }}>
         <div style={{ ...dsBase.display, fontSize: '14px', color: D_DIM, marginBottom: '10px', letterSpacing: '0.1em' }}>
-          {myVote ? `HAI VOTATO: ${myVote === 'yes' ? 'CE LA FA' : 'NON CE LA FA'} (puoi cambiare)` : 'VOTA ORA!'}
+          {loading ? 'SALVANDO...' : myVote ? `HAI VOTATO: ${myVote === 'yes' ? 'CE LA FA' : 'NON CE LA FA'} (puoi cambiare)` : 'VOTA ORA!'}
+          {voteError && <div style={{ color: '#ff2e5b', marginTop: '4px', fontSize: '11px' }}>{voteError}</div>}
         </div>
         <div className="ds-vote-buttons" style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
           <input
