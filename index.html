@@ -884,57 +884,65 @@ function useVotes() {
     if (!name.trim()) return;
     setLoading(true);
     setVoteError(null);
-    try {
-      // 1. Get current file (need SHA for update)
-      const fileRes = await fetch(
-        `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json`,
-        { headers: { 'Accept': 'application/vnd.github+json' } }
-      );
-      const fileData = await fileRes.json();
-      const currentContent = JSON.parse(atob(fileData.content));
-      const sha = fileData.sha;
+    // Retry loop to handle SHA conflicts
+    for (let attempt = 0; attempt < 3; attempt++) {
+      try {
+        // 1. Get current file with fresh SHA (use auth to avoid rate limit)
+        const fileRes = await fetch(
+          `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json?t=${Date.now()}`,
+          { headers: { 'Authorization': 'token ' + getVoteToken(), 'Accept': 'application/vnd.github+json' }, cache: 'no-store' }
+        );
+        const fileData = await fileRes.json();
+        const currentContent = JSON.parse(atob(fileData.content));
+        const sha = fileData.sha;
 
-      // 2. Update votes
-      currentContent.votes = currentContent.votes || {};
-      currentContent.votes[name.trim()] = vote;
-      const entries = Object.values(currentContent.votes);
-      currentContent.total_yes = entries.filter(v => v === 'yes').length;
-      currentContent.total_no = entries.filter(v => v === 'no').length;
+        // 2. Update votes
+        currentContent.votes = currentContent.votes || {};
+        currentContent.votes[name.trim()] = vote;
+        const entries = Object.values(currentContent.votes);
+        currentContent.total_yes = entries.filter(v => v === 'yes').length;
+        currentContent.total_no = entries.filter(v => v === 'no').length;
 
-      // 3. Write back via GitHub Contents API
-      const writeRes = await fetch(
-        `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json`,
-        {
-          method: 'PUT',
-          headers: {
-            'Authorization': 'token ' + getVoteToken(),
-            'Accept': 'application/vnd.github+json',
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            message: `Vote: ${name.trim()} -> ${vote}`,
-            content: btoa(JSON.stringify(currentContent, null, 2)),
-            sha: sha,
-          }),
+        // 3. Write back
+        const writeRes = await fetch(
+          `https://api.github.com/repos/${VOTE_REPO}/contents/votes.json`,
+          {
+            method: 'PUT',
+            headers: {
+              'Authorization': 'token ' + getVoteToken(),
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              message: `Vote: ${name.trim()} -> ${vote}`,
+              content: btoa(unescape(encodeURIComponent(JSON.stringify(currentContent, null, 2)))),
+              sha: sha,
+            }),
+          }
+        );
+        if (writeRes.ok || writeRes.status === 200) {
+          setVotes(currentContent);
+          setMyVote(vote);
+          setMyName(name.trim());
+          localStorage.setItem('ds-vote', vote);
+          localStorage.setItem('ds-voter-name', name.trim());
+          try { localStorage.setItem('ds-votes-cache', JSON.stringify(currentContent)); } catch {}
+          setTimeout(fetchVotes, 10000);
+          break; // Success
         }
-      );
-      if (!writeRes.ok) {
+        // SHA conflict — retry
+        if (writeRes.status === 409 && attempt < 2) {
+          await new Promise(r => setTimeout(r, 1000));
+          continue;
+        }
         const err = await writeRes.json();
         throw new Error(err.message || 'Write failed');
+      } catch (err) {
+        if (attempt === 2) {
+          console.error('Vote error:', err);
+          setVoteError('Errore: ' + err.message);
+        }
       }
-
-      setVotes(currentContent);
-      setMyVote(vote);
-      setMyName(name.trim());
-      localStorage.setItem('ds-vote', vote);
-      localStorage.setItem('ds-voter-name', name.trim());
-      try { localStorage.setItem('ds-votes-cache', JSON.stringify(currentContent)); } catch {}
-
-      // Refresh from source after a delay (raw.githubusercontent caches ~5 min)
-      setTimeout(fetchVotes, 10000);
-    } catch (err) {
-      console.error('Vote error:', err);
-      setVoteError('Errore: ' + err.message);
     }
     setLoading(false);
   }, [fetchVotes]);
