@@ -785,8 +785,51 @@ function DSMatchCard({m,idx,palette,intensity,speedLines,compact}){
         </div>
         <div style={{...dsBase.mono,fontSize:'11px',color:D_DIM,textAlign:'right'}}>{dateStr}</div>
       </div>
-      {open&&<div style={{position:'relative',marginTop:'10px',paddingTop:'10px',borderTop:`1.5px dashed ${D_DIM}`,...dsBase.mono,fontSize:'11px',color:D_DIM}}>
-        <span>Vision: {m.visionScore}</span> {"\u00B7"} <span>DMG: {(m.damageDealt/1000).toFixed(1)}k</span> {"\u00B7"} <span>Gold: {(m.goldEarned/1000).toFixed(1)}k</span>
+      {open&&<div style={{position:'relative',marginTop:'10px',paddingTop:'10px',borderTop:`1.5px dashed ${D_DIM}`}} onClick={e=>e.stopPropagation()}>
+        {/* Player stats summary */}
+        <div style={{...dsBase.mono,fontSize:'11px',color:D_DIM,marginBottom:'10px'}}>
+          <span>Vision: {m.visionScore}</span> {"\u00B7"} <span>DMG: {(m.damageDealt/1000).toFixed(1)}k</span> {"\u00B7"} <span>Gold: {(m.goldEarned/1000).toFixed(1)}k</span>
+        </div>
+        {/* Full match recap - all 10 players */}
+        {m.teams && m.teams.map((team, ti) => (
+          <div key={ti} style={{marginBottom:ti===0?'8px':0}}>
+            <div style={{...dsBase.display,fontSize:'13px',letterSpacing:'0.15em',marginBottom:'4px',
+              color:team.win?palette.tertiary:palette.primary,
+              textShadow:`0 0 6px ${team.win?palette.tertiary:palette.primary}44`}}>
+              {team.win?'\u2605 VITTORIA':'\u2716 SCONFITTA'} {"\u00B7"} TEAM {ti+1}
+            </div>
+            <div style={{display:'grid',gap:'3px'}}>
+              {team.players.map((p, pi) => {
+                const isMe = p.isTarget;
+                const kda = `${p.kills}/${p.deaths}/${p.assists}`;
+                return (
+                  <div key={pi} style={{
+                    display:'grid',gridTemplateColumns:'minmax(90px,1fr) 65px 50px 50px 50px 40px',gap:'6px',alignItems:'center',
+                    padding:'4px 8px',
+                    background:isMe?'rgba(255,210,58,0.1)':D_INK,
+                    border:isMe?`1px solid ${palette.secondary}44`:`1px solid ${D_INK}`,
+                    ...dsBase.mono,fontSize:'11px',color:D_LINE,
+                  }}>
+                    <div style={{overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                      <span style={{...dsBase.display,fontSize:'12px',color:isMe?palette.secondary:D_LINE}}>
+                        {fmtChamp(p.champ)}
+                      </span>
+                      <span style={{color:D_DIM,marginLeft:'4px',fontSize:'10px'}}>
+                        {p.name}{isMe?' \u25C6':''}
+                      </span>
+                    </div>
+                    <div style={{color:p.kills>=10?palette.secondary:D_LINE,fontWeight:p.kills>=10?700:400}}>{kda}</div>
+                    <div style={{color:D_DIM}}>{p.cs}cs</div>
+                    <div style={{color:D_DIM}}>{(p.damageDealt/1000).toFixed(1)}k</div>
+                    <div style={{color:D_DIM}}>{(p.goldEarned/1000).toFixed(1)}g</div>
+                    <div style={{color:D_DIM}}>lv{p.level}</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+        {!m.teams && <div style={{...dsBase.mono,fontSize:'11px',color:D_DIM,fontStyle:'italic'}}>Dettagli partita non disponibili (aggiornamento in corso...)</div>}
       </div>}
     </div>
   );

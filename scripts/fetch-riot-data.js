@@ -72,6 +72,38 @@ async function main() {
       const mins = Math.floor(dur / 60);
       const secs = dur % 60;
 
+      // All 10 participants
+      const teams = [
+        { teamId: 100, players: [] },
+        { teamId: 200, players: [] },
+      ];
+      for (const p of info.participants) {
+        const team = teams.find(t => t.teamId === p.teamId);
+        if (team) {
+          team.players.push({
+            name: p.riotIdGameName || p.summonerName || '?',
+            tag: p.riotIdTagline || '',
+            champ: p.championName,
+            kills: p.kills,
+            deaths: p.deaths,
+            assists: p.assists,
+            cs: p.totalMinionsKilled + p.neutralMinionsKilled,
+            role: p.teamPosition || p.individualPosition || 'UNKNOWN',
+            damageDealt: p.totalDamageDealtToChampions,
+            goldEarned: p.goldEarned,
+            visionScore: p.visionScore,
+            items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
+            level: p.champLevel,
+            isTarget: p.puuid === puuid,
+          });
+        }
+      }
+      // Team results
+      for (const t of teams) {
+        const teamInfo = info.teams.find(ti => ti.teamId === t.teamId);
+        t.win = teamInfo ? teamInfo.win : false;
+      }
+
       matches.push({
         matchId: matchIds[i],
         gameCreation: info.gameCreation,
@@ -88,6 +120,7 @@ async function main() {
         visionScore: player.visionScore,
         damageDealt: player.totalDamageDealtToChampions,
         goldEarned: player.goldEarned,
+        teams: teams,
       });
     } catch (err) {
       console.error(`Error fetching ${matchIds[i]}: ${err.message}`);
