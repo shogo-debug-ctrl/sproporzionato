@@ -130,9 +130,12 @@ function useLiveData() {
 
   const fetchData = React.useCallback(async () => {
     try {
-      // Fetch from raw GitHub to bypass Pages CDN cache
-      const rawUrl = 'https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/data.json';
-      const res = await fetch(rawUrl + '?t=' + Date.now(), { cache: 'no-store' });
+      // Use GitHub API — always returns fresh data, no CDN cache
+      const apiUrl = 'https://api.github.com/repos/shogo-debug-ctrl/sproporzionato/contents/data.json';
+      const res = await fetch(apiUrl, {
+        headers: { 'Accept': 'application/vnd.github.raw+json' },
+        cache: 'no-store',
+      });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       setData(json);
@@ -140,14 +143,21 @@ function useLiveData() {
       setLastUpdate(new Date());
       try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
     } catch (err) {
-      // Fallback to local data.json
+      // Fallback: raw.githubusercontent then local
       try {
-        const res2 = await fetch('data.json?t=' + Date.now());
+        const res2 = await fetch('https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/data.json?t=' + Date.now());
         if (res2.ok) {
           const json = await res2.json();
-          setData(json);
-          setError(null);
-          setLastUpdate(new Date());
+          setData(json); setError(null); setLastUpdate(new Date());
+          try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
+          return;
+        }
+      } catch {}
+      try {
+        const res3 = await fetch('data.json?t=' + Date.now());
+        if (res3.ok) {
+          const json = await res3.json();
+          setData(json); setError(null); setLastUpdate(new Date());
           try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
           return;
         }
@@ -744,7 +754,7 @@ function LoadingScreen() {
 // ═══════════════════════════════════════════════════════════════
 // Vote storage: GitHub Contents API (public read, token write)
 // Token is split to avoid GitHub push protection — repo is public anyway
-const VOTE_READ_URL = 'https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/votes.json';
+const VOTE_READ_API = 'https://api.github.com/repos/shogo-debug-ctrl/sproporzionato/contents/votes.json';
 const VOTE_REPO = 'shogo-debug-ctrl/sproporzionato';
 const _tk = ['ghp','_knYaLQnpjACL8','Gi3w4Leht41','GDj3Cn2COVYx'];
 const getVoteToken = () => _tk.join('');
@@ -758,7 +768,10 @@ function useVotes() {
 
   const fetchVotes = React.useCallback(async () => {
     try {
-      const res = await fetch(VOTE_READ_URL + '?t=' + Date.now(), { cache: 'no-store' });
+      const res = await fetch(VOTE_READ_API, {
+        headers: { 'Accept': 'application/vnd.github.raw+json' },
+        cache: 'no-store',
+      });
       if (res.ok) {
         const d = await res.json();
         setVotes(d);
