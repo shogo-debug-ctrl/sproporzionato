@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="utf-8">
-<title>Sproporzionato — Master Run · Dark Shonen</title>
+<title>Master Run · Dark Shonen — Multi Player</title>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -96,6 +96,60 @@ function tierFromAbs(abs) {
 }
 
 const MASTER_ABS = 2800;
+
+// ═══════════════════════════════════════════════════════════════
+// PLAYERS
+// ═══════════════════════════════════════════════════════════════
+const PLAYERS = [
+  {
+    id: 'sproporzionato',
+    name: 'SPROPORZIONATO!',
+    tag: 'EUVU',
+    puuid: 'Cw6nwb9CaamINcY-BcRfpYMHBWXijBj4lwcQdqWvUGXoTRjUViomuWLP4IzqAJxqTE5d5xUy2MyNOA',
+    splashLeft: 'assets/gwen.png',
+    splashRight: 'assets/ambessa.png',
+    glowLeft: 'rgba(100,150,255,0.3)',
+    glowRight: 'rgba(255,50,80,0.3)',
+    role: 'top',
+    hasVoting: true,
+  },
+  {
+    id: 'shogo',
+    name: 'SHOG\u00D8!',
+    tag: 'EUW',
+    puuid: '1tv989ay4R85EJ5Iabyc1Xwy-tCV1AxI5CH5pDMplbhwY0jN-eDe9i1aDou7rAVN5E4afT6mKTgNuQ',
+    splashLeft: 'assets/thresh.png',
+    splashRight: 'assets/bard.png',
+    glowLeft: 'rgba(50,255,200,0.3)',
+    glowRight: 'rgba(255,200,50,0.3)',
+    role: 'support',
+    hasVoting: false,
+  },
+  {
+    id: 'lee',
+    name: 'LEE MORTACCI TUA!',
+    tag: 'EUW',
+    puuid: 'Hb-Xn77JUNKM-4-H5adKkX-hI9hdpO4-ict9RvfWpqXL8a0EA0Yz6zDXp03hTHUYX3ISKI96BVsltg',
+    splashLeft: 'assets/viego.png',
+    splashRight: 'assets/graves.png',
+    glowLeft: 'rgba(50,255,150,0.3)',
+    glowRight: 'rgba(255,150,50,0.3)',
+    role: 'jungle',
+    hasVoting: false,
+  },
+  {
+    id: 'invexmood',
+    name: 'INVEXMOOD!',
+    tag: 'EUW',
+    puuid: 's_Q0kMVXpaoZdKDupYZsszUMAcJFAHYVzvyOVLEZlW-n4j882yz9Ui0ccRCkIDas1cYm7YOgHNyB8w',
+    splashLeft: 'assets/lux.png',
+    splashRight: 'assets/lux.png',
+    glowLeft: 'rgba(255,150,200,0.3)',
+    glowRight: 'rgba(255,210,50,0.3)',
+    role: 'mid',
+    hasVoting: false,
+  },
+];
 const ROLE_NAMES = { TOP:'Top', JUNGLE:'Jungle', MIDDLE:'Mid', BOTTOM:'Bot', UTILITY:'Support', UNKNOWN:'?' };
 const CHAMP_DISPLAY = { TahmKench:"Tahm Kench", DrMundo:"Dr. Mundo", Ksante:"K'Sante", AurelionSol:"Aurelion Sol", TwistedFate:"Twisted Fate", MissFortune:"Miss Fortune", MasterYi:"Master Yi", JarvanIV:"Jarvan IV", LeeSin:"Lee Sin", XinZhao:"Xin Zhao", RekSai:"Rek'Sai", KhaZix:"Kha'Zix", ChoGath:"Cho'Gath", KogMaw:"Kog'Maw", VelKoz:"Vel'Koz", BelVeth:"Bel'Veth", Zaahen:"Zaheen" };
 
@@ -123,7 +177,7 @@ function useCountdown(target) {
 // ═══════════════════════════════════════════════════════════════
 // LIVE DATA HOOK
 // ═══════════════════════════════════════════════════════════════
-function useLiveData() {
+function useLiveData(puuid) {
   const [data, setData] = React.useState(null);
   const [error, setError] = React.useState(null);
   const [lastUpdate, setLastUpdate] = React.useState(null);
@@ -131,14 +185,14 @@ function useLiveData() {
   const fetchData = React.useCallback(async () => {
     try {
       // Cloudflare Worker — always fresh, 2 min cache, CORS OK
-      const res = await fetch('https://sproporzionato-api.amedeo-shogo.workers.dev/api/data', { cache: 'no-store' });
+      const res = await fetch(`https://sproporzionato-api.amedeo-shogo.workers.dev/api/data?puuid=${puuid}`, { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
       if (json.error) throw new Error(json.error);
       setData(json);
       setError(null);
       setLastUpdate(new Date());
-      try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
+      try { localStorage.setItem('ds-cache-' + puuid, JSON.stringify(json)); } catch {}
     } catch (err) {
       // Fallback: GitHub API then local
       try {
@@ -148,19 +202,19 @@ function useLiveData() {
         if (res2.ok) {
           const json = await res2.json();
           setData(json); setError(null); setLastUpdate(new Date());
-          try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
+          try { localStorage.setItem('ds-cache-' + puuid, JSON.stringify(json)); } catch {}
           return;
         }
       } catch {}
       setError(err.message);
       if (!data) {
         try {
-          const cached = localStorage.getItem('ds-cache');
+          const cached = localStorage.getItem('ds-cache-' + puuid);
           if (cached) { setData(JSON.parse(cached)); setLastUpdate(new Date()); }
         } catch {}
       }
     }
-  }, []);
+  }, [puuid]);
 
   React.useEffect(() => {
     fetchData();
@@ -336,7 +390,7 @@ function TweakSelect({label,value,options,onChange}){return(<TweakRow label={lab
 // ═══════════════════════════════════════════════════════════════
 // CHAMPION SPLASH ART — fixed on side margins with parallax
 // ═══════════════════════════════════════════════════════════════
-function ChampionSplashSides() {
+function ChampionSplashSides({ player }) {
   const [scrollY, setScrollY] = React.useState(0);
   const [wide, setWide] = React.useState(window.innerWidth > 1400);
 
@@ -357,40 +411,37 @@ function ChampionSplashSides() {
   if (!wide) return null;
 
   const parallax = scrollY * 0.15;
-  const sideWidth = 'calc((100vw - 1280px) / 2)';
 
   return (
     <>
-      {/* Gwen — left side, PNG with transparency */}
       <div style={{
         position: 'fixed', bottom: 0, left: 0,
         pointerEvents: 'none', zIndex: 0,
         transform: `translateY(${-parallax}px)`,
       }}>
         <img
-          src="assets/gwen.png"
+          src={player.splashLeft}
           alt=""
           style={{
             height: '90vh', width: 'auto',
             opacity: 0.85,
-            filter: 'brightness(0.9) drop-shadow(0 0 30px rgba(100,150,255,0.3))',
+            filter: `brightness(0.9) drop-shadow(0 0 30px ${player.glowLeft})`,
           }}
         />
       </div>
 
-      {/* Ambessa — right side, PNG with transparency */}
       <div style={{
         position: 'fixed', bottom: 0, right: 0,
         pointerEvents: 'none', zIndex: 0,
         transform: `translateY(${-parallax * 0.8}px)`,
       }}>
         <img
-          src="assets/ambessa.png"
+          src={player.splashRight}
           alt=""
           style={{
             height: '90vh', width: 'auto',
             opacity: 0.85,
-            filter: 'brightness(0.85) drop-shadow(0 0 30px rgba(255,50,80,0.3))',
+            filter: `brightness(0.85) drop-shadow(0 0 30px ${player.glowRight})`,
           }}
         />
       </div>
@@ -425,7 +476,7 @@ function MangaPanelDark({children,style,tilt=0,hatch,accent=D_LINE,intensity=1,h
 // ═══════════════════════════════════════════════════════════════
 // LIVE GAME INDICATOR
 // ═══════════════════════════════════════════════════════════════
-const LIVE_API = 'https://sproporzionato-api.amedeo-shogo.workers.dev/api/live';
+const LIVE_API_BASE = 'https://sproporzionato-api.amedeo-shogo.workers.dev/api/live';
 const DDRAGON_VER = '16.9.1';
 
 // Champion ID → name cache
@@ -443,7 +494,7 @@ async function getChampIdMap() {
   } catch { return {}; }
 }
 
-function useLiveGame() {
+function useLiveGame(puuid) {
   const [live, setLive] = React.useState(null);
   const [champMap, setChampMap] = React.useState({});
 
@@ -451,20 +502,21 @@ function useLiveGame() {
     getChampIdMap().then(setChampMap);
     const check = async () => {
       try {
-        const res = await fetch(LIVE_API, { cache: 'no-store' });
+        const res = await fetch(`${LIVE_API_BASE}?puuid=${puuid}`, { cache: 'no-store' });
         if (res.ok) setLive(await res.json());
+        else setLive(null);
       } catch {}
     };
     check();
-    const t = setInterval(check, 30000); // Check every 30s
+    const t = setInterval(check, 30000);
     return () => clearInterval(t);
-  }, []);
+  }, [puuid]);
 
   return { live, champMap };
 }
 
-function LiveGameBanner({ palette, intensity }) {
-  const { live, champMap } = useLiveGame();
+function LiveGameBanner({ palette, intensity, puuid, playerName }) {
+  const { live, champMap } = useLiveGame(puuid);
 
   if (!live || !live.inGame) return null;
 
@@ -523,7 +575,7 @@ function LiveGameBanner({ palette, intensity }) {
           <div key={ti} style={{ background: D_INK, border: `2px solid ${ti === 0 ? palette.tertiary + '55' : palette.primary + '55'}`, padding: '10px' }}>
             <div style={{ ...dsBase.display, fontSize: '12px', letterSpacing: '0.15em', marginBottom: '8px',
               color: ti === 0 ? palette.tertiary : palette.primary }}>
-              TEAM {ti + 1} {team.players.some(p => p.isTarget) ? `\u00B7 ${"\u2605"} SPROPORZIONATO` : ''}
+              TEAM {ti + 1} {team.players.some(p => p.isTarget) ? `\u00B7 ${"\u2605"} ${playerName}` : ''}
             </div>
             <div style={{ display: 'grid', gap: '4px' }}>
               {team.players.map((p, pi) => {
@@ -558,7 +610,7 @@ function LiveGameBanner({ palette, intensity }) {
 // DASHBOARD SECTIONS
 // ═══════════════════════════════════════════════════════════════
 
-function DSHeader({palette,intensity,soundFx,rank}){
+function DSHeader({palette,intensity,soundFx,rank,playerName}){
   const cd=useCountdown(DEADLINE);
   const [hover,setHover]=React.useState(false);
   const tierDisplay = rank ? `${rank.tier} ${rank.rank}` : '...';
@@ -577,7 +629,7 @@ function DSHeader({palette,intensity,soundFx,rank}){
             {tierDisplay} // RANKED SOLO
           </div>
           <h1 className="ds-title" onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)} style={{...dsBase.display,fontSize:'clamp(60px,8vw,120px)',margin:'8px 0 0',lineHeight:0.85,color:D_INK,WebkitTextStroke:`4px ${D_LINE}`,textShadow:`8px 8px 0 ${palette.primary}, 12px 12px 0 ${D_LINE}, 0 0 ${32*intensity}px ${palette.primary}66`,transform:hover?'rotate(-2deg) scale(1.02)':'rotate(-1deg)',transition:'transform .3s cubic-bezier(.3,1.6,.4,1)',cursor:'default'}}>
-            SPROPORZIONATO!
+            {playerName}
           </h1>
           <div className="ds-subtitle" style={{...dsBase.hand,fontSize:'26px',color:D_INK,marginTop:'12px',background:palette.secondary,display:'inline-block',padding:'4px 16px',border:`3px solid ${D_LINE}`,transform:'rotate(1deg)',boxShadow:`4px 4px 0 ${D_LINE}, 0 0 ${20*intensity}px ${palette.secondary}55`}}>
             verso il MASTER!! {"\u2192"} la corsa finale
@@ -624,14 +676,17 @@ function DSStats({palette,intensity,halftone,showStreak,tiltAmt,d}){
   );
 }
 
-function DSStats2({palette,intensity,halftone,tiltAmt,d}){
+function DSStats2({palette,intensity,halftone,tiltAmt,d,playerRole}){
   const matches = d.matches || [];
+  const isSupport = playerRole === 'support';
 
-  // CS/min average
+  // CS/min average (or Vision/min for supports)
   const csPerMin = matches.length ? (matches.reduce((s,m) => s + m.cs / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(1) : '0.0';
+  const visionPerMin = matches.length ? (matches.reduce((s,m) => s + (m.visionScore || 0) / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(1) : '0.0';
 
-  // DMG/min average
+  // DMG/min average (or Assist/min for supports)
   const dmgPerMin = matches.length ? (matches.reduce((s,m) => s + m.damageDealt / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(0) : '0';
+  const assistPerMin = matches.length ? (matches.reduce((s,m) => s + m.assists / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(1) : '0.0';
 
   // Kill Participation average
   const kpAvg = matches.length ? Math.round(matches.reduce((s,m) => {
@@ -646,9 +701,17 @@ function DSStats2({palette,intensity,halftone,tiltAmt,d}){
   const todayWR = todayMatches.length ? Math.round(todayWins / todayMatches.length * 100) : null;
   const todaySub = todayMatches.length ? `${todayWins}W \u2014 ${todayMatches.length - todayWins}L oggi` : 'nessuna partita oggi';
 
+  const stat1 = isSupport
+    ? { l: 'VISION/MIN', v: visionPerMin, s: parseFloat(visionPerMin) >= 2.5 ? 'WARDKING!!' : parseFloat(visionPerMin) >= 1.5 ? 'buono' : 'mediocre', c: parseFloat(visionPerMin) >= 2.5 ? palette.secondary : parseFloat(visionPerMin) >= 1.5 ? palette.tertiary : palette.primary, t: -1 }
+    : { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 10 ? 'GODLIKE!!' : parseFloat(csPerMin) >= 7.5 ? 'buono' : 'mediocre', c: parseFloat(csPerMin) >= 10 ? palette.secondary : parseFloat(csPerMin) >= 7.5 ? palette.tertiary : palette.primary, t: -1 };
+
+  const stat2 = isSupport
+    ? { l: 'ASSIST/MIN', v: assistPerMin, s: parseFloat(assistPerMin) >= 1.0 ? 'playmaker!!' : parseFloat(assistPerMin) >= 0.6 ? 'buono' : 'mediocre', c: parseFloat(assistPerMin) >= 1.0 ? palette.secondary : parseFloat(assistPerMin) >= 0.6 ? palette.tertiary : palette.primary, t: 1 }
+    : { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 1000 ? 'carry mode!!' : parseInt(dmgPerMin) >= 850 ? 'buono' : 'mediocre', c: parseInt(dmgPerMin) >= 1000 ? palette.secondary : parseInt(dmgPerMin) >= 850 ? palette.tertiary : palette.primary, t: 1 };
+
   const items = [
-    { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 10 ? 'GODLIKE!!' : parseFloat(csPerMin) >= 7.5 ? 'buono' : 'mediocre', c: parseFloat(csPerMin) >= 10 ? palette.secondary : parseFloat(csPerMin) >= 7.5 ? palette.tertiary : palette.primary, t: -1 },
-    { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 1000 ? 'carry mode!!' : parseInt(dmgPerMin) >= 850 ? 'buono' : 'mediocre', c: parseInt(dmgPerMin) >= 1000 ? palette.secondary : parseInt(dmgPerMin) >= 850 ? palette.tertiary : palette.primary, t: 1 },
+    stat1,
+    stat2,
     { l: 'KILL PART.', v: `${kpAvg}%`, s: kpAvg >= 65 ? 'ovunque!!' : kpAvg >= 50 ? 'presente' : 'gioca solo', c: '#a86bff', t: -1 },
     { l: 'WR OGGI', v: todayWR !== null ? `${todayWR}%` : '--', s: todaySub, c: todayWR !== null ? (todayWR >= 55 ? NEON_GREEN : palette.primary) : D_DIM, t: 1 },
   ];
@@ -1124,99 +1187,316 @@ function DSVoting({ palette, intensity, halftone }) {
 }
 
 // ═══════════════════════════════════════════════════════════════
+// PLAYER SELECTOR POPUP
+// ═══════════════════════════════════════════════════════════════
+const __SELECTOR_STYLE = `
+  .ps-overlay{position:fixed;inset:0;z-index:99999;background:rgba(5,3,10,0.92);backdrop-filter:blur(16px);display:flex;flex-direction:column;align-items:center;justify-content:center;animation:psFadeIn .3s ease-out}
+  @keyframes psFadeIn{from{opacity:0}to{opacity:1}}
+  @keyframes psCardIn{from{transform:translateY(40px) scale(0.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
+  .ps-title{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(36px,8vw,72px);color:#0a0810;-webkit-text-stroke:3px #f5f0e8;text-shadow:6px 6px 0 #ff2e5b,10px 10px 0 #f5f0e8,0 0 40px rgba(255,46,91,0.4);letter-spacing:0.04em;margin-bottom:12px;text-align:center}
+  .ps-sub{font-family:"Permanent Marker","Caveat",cursive;font-size:22px;color:#ffd23a;margin-bottom:40px;text-align:center}
+  .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;width:90%;margin-bottom:24px}
+  @media(max-width:900px){.ps-grid{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:500px){.ps-grid{grid-template-columns:1fr}}
+  .ps-card{position:relative;border:3px solid #f5f0e8;background:#15111c;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.3,1.6,.4,1),box-shadow .25s;box-shadow:4px 4px 0 #f5f0e8;min-height:180px;animation:psCardIn .4s ease-out both}
+  .ps-card:hover{transform:scale(1.05) rotate(-1deg);box-shadow:4px 4px 0 #f5f0e8,0 0 30px rgba(255,210,58,0.3)}
+  .ps-card-bg{position:absolute;inset:0;background-size:cover;background-position:center top;opacity:0.35;filter:brightness(0.7)}
+  .ps-card-content{position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:160px}
+  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:28px;color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.04em;line-height:1}
+  .ps-card-rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:#7c7088;margin-top:6px}
+  .ps-card-role{font-family:"Permanent Marker","Caveat",cursive;font-size:14px;color:#ffd23a;margin-top:4px}
+  .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px;max-width:400px;width:90%}
+  .ps-compare:hover{transform:scale(1.03);box-shadow:0 0 24px rgba(255,210,58,0.3)}
+  .ps-compare-title{font-family:"Bangers","Anton",Impact,sans-serif;font-size:32px;color:#ffd23a;text-shadow:2px 2px 0 #0a0810;letter-spacing:0.1em}
+  .ps-compare-sub{font-family:"Permanent Marker","Caveat",cursive;font-size:16px;color:#7c7088;margin-top:4px}
+`;
+
+function PlayerSelector({ onSelect, visible, onClose }) {
+  const [ranks, setRanks] = React.useState({});
+
+  React.useEffect(() => {
+    if (!visible) return;
+    PLAYERS.forEach(async (p) => {
+      try {
+        const res = await fetch(`https://sproporzionato-api.amedeo-shogo.workers.dev/api/data?puuid=${p.puuid}`, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          if (json.rank) {
+            setRanks(prev => ({ ...prev, [p.id]: json.rank }));
+          }
+        }
+      } catch {}
+    });
+  }, [visible]);
+
+  if (!visible) return null;
+
+  return (
+    <>
+      <style>{__SELECTOR_STYLE}</style>
+      <div className="ps-overlay" onClick={onClose}>
+        <div onClick={e => e.stopPropagation()}>
+          <div className="ps-title">SELECT YOUR FIGHTER!!</div>
+          <div className="ps-sub">{"\u2192"} scegli chi monitorare</div>
+
+          <div className="ps-grid">
+            {PLAYERS.map((p, i) => {
+              const r = ranks[p.id];
+              const tierLabel = r ? `${r.tier} ${r.rank || ''} ${r.lp} LP` : 'Loading...';
+              return (
+                <div key={p.id} className="ps-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => onSelect(p.id)}>
+                  <div className="ps-card-bg" style={{ backgroundImage: `url(${p.splashLeft})` }}/>
+                  <div className="ps-card-content">
+                    <div className="ps-card-name">{p.name}</div>
+                    <div className="ps-card-role">{p.role.toUpperCase()} {"\u00B7"} #{p.tag}</div>
+                    <div className="ps-card-rank">{tierLabel}</div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          <div className="ps-compare" onClick={() => onSelect('compare')}>
+            <div className="ps-compare-title">CONFRONTO!!</div>
+            <div className="ps-compare-sub">compara tutti i player side-by-side</div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// COMPARISON VIEW
+// ═══════════════════════════════════════════════════════════════
+function ComparisonView({ palette, intensity }) {
+  const [allData, setAllData] = React.useState({});
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    Promise.all(PLAYERS.map(async (p) => {
+      try {
+        const res = await fetch(`https://sproporzionato-api.amedeo-shogo.workers.dev/api/data?puuid=${p.puuid}`, { cache: 'no-store' });
+        if (res.ok) {
+          const json = await res.json();
+          return { id: p.id, raw: json, processed: processData(json) };
+        }
+      } catch {}
+      return { id: p.id, raw: null, processed: null };
+    })).then(results => {
+      if (cancelled) return;
+      const map = {};
+      results.forEach(r => { map[r.id] = r; });
+      setAllData(map);
+      setLoading(false);
+    });
+    return () => { cancelled = true; };
+  }, []);
+
+  if (loading) return <LoadingScreen/>;
+
+  const rows = [
+    { label: 'RANK', get: (d) => d?.raw?.rank ? `${d.raw.rank.tier} ${d.raw.rank.rank || ''}`.trim() : '--', best: (vals) => { const order = Object.keys(TIER_BASE); return vals.indexOf(vals.reduce((best,v,i) => { const a = allData[PLAYERS[i].id]?.processed?.currentAbs || 0; const b = allData[PLAYERS[vals.indexOf(best) < 0 ? 0 : vals.indexOf(best)].id]?.processed?.currentAbs || 0; return a > b ? v : best; }, vals[0])); }},
+    { label: 'LP', get: (d) => d?.raw?.rank ? String(d.raw.rank.lp) : '--', best: (vals) => { let maxI = 0; vals.forEach((v,i) => { if (parseInt(v) > parseInt(vals[maxI])) maxI = i; }); return maxI; }},
+    { label: 'WIN RATE', get: (d) => { if (!d?.processed) return '--'; return `${d.processed.totalWR}%`; }, best: (vals) => { let maxI = 0; vals.forEach((v,i) => { if (parseInt(v) > parseInt(vals[maxI])) maxI = i; }); return maxI; }},
+    { label: 'KDA', get: (d) => d?.processed?.avgKDA || '--', best: (vals) => { let maxI = 0; vals.forEach((v,i) => { if (parseFloat(v) > parseFloat(vals[maxI])) maxI = i; }); return maxI; }},
+    { label: 'STREAK', get: (d) => d?.processed ? `${d.processed.streakCount}x${d.processed.streakType}` : '--', best: (vals) => { let maxI = 0; vals.forEach((v,i) => { const p = allData[PLAYERS[i].id]?.processed; const best = allData[PLAYERS[maxI].id]?.processed; if (p && best && p.streakType === 'W' && p.streakCount > (best.streakType === 'W' ? best.streakCount : 0)) maxI = i; }); return maxI; }},
+    { label: 'LP TO MASTER', get: (d) => d?.processed ? String(d.processed.lpToMaster) : '--', best: (vals) => { let minI = 0; vals.forEach((v,i) => { if (parseInt(v) < parseInt(vals[minI]) && v !== '--') minI = i; }); return minI; }},
+    { label: 'PROGRESS %', get: (d) => d?.processed ? `${Math.round(d.processed.progressPct)}%` : '--', best: (vals) => { let maxI = 0; vals.forEach((v,i) => { if (parseInt(v) > parseInt(vals[maxI])) maxI = i; }); return maxI; }},
+    { label: 'GAMES', get: (d) => d?.processed ? String(d.processed.totalGames) : '--', best: (vals) => { let maxI = 0; vals.forEach((v,i) => { if (parseInt(v) > parseInt(vals[maxI])) maxI = i; }); return maxI; }},
+  ];
+
+  return (
+    <MangaPanelDark accent={palette.primary} intensity={intensity} style={{ padding: '24px', marginBottom: '24px' }}>
+      <div style={{ ...dsBase.display, fontSize: '28px', color: D_LINE, marginBottom: '20px', textAlign: 'center' }}>
+        CONFRONTO!! <span style={{ color: palette.primary, textShadow: `0 0 12px ${palette.primary}66` }}>// TUTTI I PLAYER</span>
+      </div>
+
+      <div style={{ overflowX: 'auto' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+          <thead>
+            <tr>
+              <th style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.15em', padding: '10px 12px', textAlign: 'left', borderBottom: `2px solid ${D_LINE}` }}></th>
+              {PLAYERS.map(p => (
+                <th key={p.id} style={{ ...dsBase.display, fontSize: '16px', color: palette.secondary, padding: '10px 12px', textAlign: 'center', borderBottom: `2px solid ${D_LINE}`, textShadow: `0 0 8px ${palette.secondary}44` }}>
+                  {p.name.replace('!','')}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {rows.map((row, ri) => {
+              const vals = PLAYERS.map(p => row.get(allData[p.id]));
+              const bestIdx = row.best(vals);
+              return (
+                <tr key={ri} style={{ background: ri % 2 === 0 ? D_INK : 'rgba(255,255,255,0.02)' }}>
+                  <td style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.1em', padding: '12px', borderBottom: `1px solid ${D_DIM}33` }}>{row.label}</td>
+                  {vals.map((v, vi) => (
+                    <td key={vi} style={{
+                      ...dsBase.display, fontSize: '20px', textAlign: 'center', padding: '12px',
+                      borderBottom: `1px solid ${D_DIM}33`,
+                      color: vi === bestIdx ? NEON_GREEN : D_LINE,
+                      textShadow: vi === bestIdx ? `0 0 12px ${NEON_GREEN}88` : 'none',
+                    }}>{v}</td>
+                  ))}
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </MangaPanelDark>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SINGLE PLAYER DASHBOARD (extracted from old DarkShonenApp)
+// ═══════════════════════════════════════════════════════════════
+function PlayerDashboard({ player, tweaks, setTweak }) {
+  const t = tweaks;
+  const palette = ACCENT_PRESETS[t.accent] || ACCENT_PRESETS.red;
+  const intensity = t.intensity;
+  const halftone = t.halftone;
+  const speedLines = t.speedLines;
+  const tiltAmt = t.tilt;
+  const compact = t.compactMode;
+
+  const { data: raw, error, lastUpdate, refresh } = useLiveData(player.puuid);
+
+  if (!raw) return <LoadingScreen/>;
+
+  const d = processData(raw);
+
+  return (
+    <>
+      {/* Update bar */}
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px',...dsBase.mono,fontSize:'11px',color:D_DIM}}>
+        <div>
+          {"\uD83D\uDD34"} LIVE {"\u00B7"} auto-refresh ogni 3 min
+          {error && <span style={{color:'#ff2e5b',marginLeft:'8px'}}>({error})</span>}
+        </div>
+        <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
+          {lastUpdate && <span>ultimo update: {lastUpdate.toLocaleTimeString('it-IT')}</span>}
+          <button onClick={refresh} style={{background:'none',border:`1px solid ${D_DIM}`,color:D_LINE,padding:'2px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',fontFamily:'inherit'}}>refresh</button>
+        </div>
+      </div>
+
+      {/* Season record from API */}
+      {d.rank && <div style={{...dsBase.mono,fontSize:'12px',color:D_DIM,marginBottom:'8px',textAlign:'center'}}>
+        Season record: {d.rank.wins}W {d.rank.losses}L ({Math.round(d.rank.wins/(d.rank.wins+d.rank.losses)*100)}%) {d.rank.hotStreak ? `${"\u00B7"} HOT STREAK \uD83D\uDD25` : ''}
+      </div>}
+
+      <LiveGameBanner palette={palette} intensity={intensity} puuid={player.puuid} playerName={player.name}/>
+      <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank} playerName={player.name}/>
+
+      <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
+      <DSStats2 palette={palette} intensity={intensity} halftone={halftone} tiltAmt={tiltAmt} d={d} playerRole={player.role}/>
+      <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
+      <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
+
+      <div className="ds-split" style={{display:'grid',gridTemplateColumns:'7fr 5fr',gap:'16px',marginBottom:'24px'}}>
+        <MangaPanelDark accent={palette.tertiary} intensity={intensity} halftone={halftone} style={{padding:'18px 20px'}}>
+          <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'8px'}}>
+            <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>POWER CHART <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.totalGames} BATTLES</span></div>
+            <div style={{...dsBase.hand,fontSize:'16px',color:palette.tertiary}}>la traiettoria!!</div>
+          </div>
+          <DSChart palette={palette} intensity={intensity} d={d}/>
+        </MangaPanelDark>
+        <DSMvp palette={palette} intensity={intensity} halftone={halftone} d={d}/>
+      </div>
+
+      <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'12px'}}>
+          <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>BATTLE LOG <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// LIVE</span></div>
+          <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, d.matches.length)} partite</div>
+        </div>
+        <div style={{display:'grid',gap:'8px'}}>
+          {d.matches.slice(0,t.matchCount).map((m,i)=>(
+            <DSMatchCard key={m.matchId} m={m} idx={i} palette={palette} intensity={intensity} speedLines={speedLines} compact={compact}/>
+          ))}
+        </div>
+      </MangaPanelDark>
+
+      <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
+        <div style={{...dsBase.display,fontSize:'24px',marginBottom:'12px',color:D_LINE}}>
+          CHAMPION ROSTER <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.mainRole ? ROLE_NAMES[d.mainRole.role] : '?'} MAIN</span>
+        </div>
+        <div className="ds-champ-grid" style={{display:'grid',gap:'10px',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))'}}>
+          {d.champStats.map(s=><DSChampCard key={s.name} s={s} palette={palette} intensity={intensity} halftone={halftone}/>)}
+        </div>
+      </MangaPanelDark>
+
+      {player.hasVoting && <DSVoting palette={palette} intensity={intensity} halftone={halftone}/>}
+
+      <div style={{position:'relative',textAlign:'center',padding:'20px 0'}}>
+        <BurstShapeDark size={140} color={palette.secondary} stroke={D_LINE}>
+          <div style={{...dsBase.display,fontSize:'20px',color:D_INK,lineHeight:1}}>TO BE<br/>CONTINUED!!</div>
+        </BurstShapeDark>
+        <div style={{...dsBase.hand,fontSize:'18px',color:D_LINE,marginTop:'4px',textShadow:`0 0 8px ${palette.tertiary}66`}}>
+          {"\u2192"} next episode: la scalata continua
+        </div>
+      </div>
+    </>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // MAIN APP
 // ═══════════════════════════════════════════════════════════════
 function DarkShonenApp(){
-  const {data:raw,error,lastUpdate,refresh}=useLiveData();
-  const [t,setTweak]=useTweaks(TWEAK_DEFAULTS);
-  const palette=ACCENT_PRESETS[t.accent]||ACCENT_PRESETS.red;
-  const intensity=t.intensity;
-  const halftone=t.halftone;
-  const speedLines=t.speedLines;
-  const tiltAmt=t.tilt;
-  const compact=t.compactMode;
-  if(!raw) return <LoadingScreen/>;
+  const [selectedId, setSelectedId] = React.useState(() => {
+    try { return localStorage.getItem('ds-selected-player') || null; } catch { return null; }
+  });
+  const [selectorOpen, setSelectorOpen] = React.useState(!selectedId);
+  const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+  const palette = ACCENT_PRESETS[t.accent] || ACCENT_PRESETS.red;
+  const intensity = t.intensity;
+  const compact = t.compactMode;
 
-  const d=processData(raw);
+  const handleSelect = React.useCallback((id) => {
+    setSelectedId(id);
+    setSelectorOpen(false);
+    try { localStorage.setItem('ds-selected-player', id); } catch {}
+  }, []);
 
-  const pageBg=`radial-gradient(circle at 0 0,${palette.secondary}24 0%,transparent 30%),radial-gradient(circle at 100% 100%,${palette.primary}29 0%,transparent 35%),radial-gradient(circle at 50% 50%,${palette.tertiary}10 0%,transparent 60%)`;
+  const player = PLAYERS.find(p => p.id === selectedId) || PLAYERS[0];
+  const isCompare = selectedId === 'compare';
+
+  const pageBg = `radial-gradient(circle at 0 0,${palette.secondary}24 0%,transparent 30%),radial-gradient(circle at 100% 100%,${palette.primary}29 0%,transparent 35%),radial-gradient(circle at 50% 50%,${palette.tertiary}10 0%,transparent 60%)`;
 
   return(
     <div style={{minHeight:'100vh',background:D_INK,backgroundImage:pageBg,color:D_LINE,...dsBase.body}}>
       <style>{`@keyframes dsPulse{0%,100%{transform:rotate(15deg) scale(1)}50%{transform:rotate(15deg) scale(1.12)}}`}</style>
 
+      {/* Player Selector Popup */}
+      <PlayerSelector visible={selectorOpen} onSelect={handleSelect} onClose={() => { if (selectedId) setSelectorOpen(false); }}/>
+
       {/* Champion splash art on side margins */}
-      <ChampionSplashSides/>
+      {!isCompare && <ChampionSplashSides player={player}/>}
 
       <div className="ds-container" style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
 
-        {/* Update bar */}
-        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'12px',...dsBase.mono,fontSize:'11px',color:D_DIM}}>
-          <div>
-            {"\uD83D\uDD34"} LIVE {"\u00B7"} auto-refresh ogni 3 min
-            {error && <span style={{color:'#ff2e5b',marginLeft:'8px'}}>({error})</span>}
-          </div>
-          <div style={{display:'flex',alignItems:'center',gap:'12px'}}>
-            {lastUpdate && <span>ultimo update: {lastUpdate.toLocaleTimeString('it-IT')}</span>}
-            <button onClick={refresh} style={{background:'none',border:`1px solid ${D_DIM}`,color:D_LINE,padding:'2px 8px',borderRadius:'4px',cursor:'pointer',fontSize:'11px',fontFamily:'inherit'}}>refresh</button>
-          </div>
-        </div>
-
-        {/* Season record from API */}
-        {d.rank && <div style={{...dsBase.mono,fontSize:'12px',color:D_DIM,marginBottom:'8px',textAlign:'center'}}>
-          Season record: {d.rank.wins}W {d.rank.losses}L ({Math.round(d.rank.wins/(d.rank.wins+d.rank.losses)*100)}%) {d.rank.hotStreak ? `${"\u00B7"} HOT STREAK \uD83D\uDD25` : ''}
-        </div>}
-
-        <LiveGameBanner palette={palette} intensity={intensity}/>
-        <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
-
-        <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
-        <DSStats2 palette={palette} intensity={intensity} halftone={halftone} tiltAmt={tiltAmt} d={d}/>
-        <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
-        <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
-
-        <div className="ds-split" style={{display:'grid',gridTemplateColumns:'7fr 5fr',gap:'16px',marginBottom:'24px'}}>
-          <MangaPanelDark accent={palette.tertiary} intensity={intensity} halftone={halftone} style={{padding:'18px 20px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'8px'}}>
-              <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>POWER CHART <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.totalGames} BATTLES</span></div>
-              <div style={{...dsBase.hand,fontSize:'16px',color:palette.tertiary}}>la traiettoria!!</div>
-            </div>
-            <DSChart palette={palette} intensity={intensity} d={d}/>
-          </MangaPanelDark>
-          <DSMvp palette={palette} intensity={intensity} halftone={halftone} d={d}/>
-        </div>
-
-        <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
-          <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'12px'}}>
-            <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>BATTLE LOG <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// LIVE</span></div>
-            <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, d.matches.length)} partite</div>
-          </div>
-          <div style={{display:'grid',gap:'8px'}}>
-            {d.matches.slice(0,t.matchCount).map((m,i)=>(
-              <DSMatchCard key={m.matchId} m={m} idx={i} palette={palette} intensity={intensity} speedLines={speedLines} compact={compact}/>
-            ))}
-          </div>
-        </MangaPanelDark>
-
-        <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
-          <div style={{...dsBase.display,fontSize:'24px',marginBottom:'12px',color:D_LINE}}>
-            CHAMPION ROSTER <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// {d.mainRole ? ROLE_NAMES[d.mainRole.role] : '?'} MAIN</span>
-          </div>
-          <div className="ds-champ-grid" style={{display:'grid',gap:'10px',gridTemplateColumns:'repeat(auto-fill,minmax(280px,1fr))'}}>
-            {d.champStats.map(s=><DSChampCard key={s.name} s={s} palette={palette} intensity={intensity} halftone={halftone}/>)}
-          </div>
-        </MangaPanelDark>
-
-        <DSVoting palette={palette} intensity={intensity} halftone={halftone}/>
-
-        <div style={{position:'relative',textAlign:'center',padding:'20px 0'}}>
-          <BurstShapeDark size={140} color={palette.secondary} stroke={D_LINE}>
-            <div style={{...dsBase.display,fontSize:'20px',color:D_INK,lineHeight:1}}>TO BE<br/>CONTINUED!!</div>
-          </BurstShapeDark>
-          <div style={{...dsBase.hand,fontSize:'18px',color:D_LINE,marginTop:'4px',textShadow:`0 0 8px ${palette.tertiary}66`}}>
-            {"\u2192"} next episode: la scalata continua
+        {/* Top bar with player switcher */}
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+          <button onClick={() => setSelectorOpen(true)} style={{
+            background:'rgba(255,210,58,0.1)',border:`2px solid ${palette.secondary}`,color:palette.secondary,
+            padding:'6px 16px',cursor:'pointer',...dsBase.display,fontSize:'14px',letterSpacing:'0.1em',
+            boxShadow:`0 0 12px ${palette.secondary}33`,transition:'transform .2s,box-shadow .2s',
+          }} onMouseEnter={e=>{e.target.style.transform='scale(1.05)';e.target.style.boxShadow=`0 0 20px ${palette.secondary}55`}} onMouseLeave={e=>{e.target.style.transform='scale(1)';e.target.style.boxShadow=`0 0 12px ${palette.secondary}33`}}>
+            {"\u2605"} {isCompare ? 'CONFRONTO' : player.name} {"\u00B7"} CAMBIA PLAYER
+          </button>
+          <div style={{...dsBase.mono,fontSize:'11px',color:D_DIM}}>
+            {PLAYERS.length} player registrati
           </div>
         </div>
+
+        {isCompare ? (
+          <ComparisonView palette={palette} intensity={intensity}/>
+        ) : (
+          <PlayerDashboard player={player} tweaks={t} setTweak={setTweak}/>
+        )}
       </div>
 
       <TweaksPanel title="Tweaks">
