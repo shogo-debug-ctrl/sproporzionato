@@ -392,7 +392,7 @@ function TweakSelect({label,value,options,onChange}){return(<TweakRow label={lab
 // ═══════════════════════════════════════════════════════════════
 function ChampionSplashSides({ player }) {
   const [scrollY, setScrollY] = React.useState(0);
-  const [wide, setWide] = React.useState(window.innerWidth > 1100);
+  const [wide, setWide] = React.useState(window.innerWidth > 1200);
 
   React.useEffect(() => {
     let ticking = false;
@@ -402,7 +402,7 @@ function ChampionSplashSides({ player }) {
         ticking = true;
       }
     };
-    const onResize = () => setWide(window.innerWidth > 1100);
+    const onResize = () => setWide(window.innerWidth > 1200);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize); };
@@ -411,36 +411,51 @@ function ChampionSplashSides({ player }) {
   if (!wide) return null;
 
   const parallax = scrollY * 0.15;
+  const sideW = 'calc((100vw - 1280px) / 2 + 80px)';
 
   return (
     <>
-      {/* Left champion — behind content */}
-      <img
-        src={player.splashLeft}
-        alt=""
-        style={{
-          position: 'fixed', bottom: `${-parallax}px`, left: 0,
-          height: '95vh', width: 'auto', maxWidth: 'none',
-          opacity: 0.6, pointerEvents: 'none', zIndex: 0,
-          filter: `brightness(0.7) drop-shadow(0 0 40px ${player.glowLeft})`,
-          maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
-          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
-        }}
-      />
+      {/* Left champion — behind content, clipped to side */}
+      <div style={{
+        position: 'fixed', top: 0, left: 0, bottom: 0,
+        width: sideW, overflow: 'hidden',
+        pointerEvents: 'none', zIndex: 0,
+      }}>
+        <img
+          src={player.splashLeft}
+          alt=""
+          style={{
+            position: 'absolute', bottom: `${-parallax}px`, right: '-60%',
+            height: '90vh', width: 'auto', maxWidth: 'none',
+            opacity: 0.7,
+            filter: `brightness(0.75) drop-shadow(0 0 30px ${player.glowLeft})`,
+          }}
+        />
+        <div style={{ position: 'absolute', inset: 0,
+          background: 'linear-gradient(to left, #0a0810 0%, transparent 40%)',
+        }}/>
+      </div>
 
-      {/* Right champion — behind content */}
-      <img
-        src={player.splashRight}
-        alt=""
-        style={{
-          position: 'fixed', bottom: `${-parallax * 0.8}px`, right: 0,
-          height: '95vh', width: 'auto', maxWidth: 'none',
-          opacity: 0.6, pointerEvents: 'none', zIndex: 0,
-          filter: `brightness(0.7) drop-shadow(0 0 40px ${player.glowRight})`,
-          maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
-          WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
-        }}
-      />
+      {/* Right champion — behind content, clipped to side */}
+      <div style={{
+        position: 'fixed', top: 0, right: 0, bottom: 0,
+        width: sideW, overflow: 'hidden',
+        pointerEvents: 'none', zIndex: 0,
+      }}>
+        <img
+          src={player.splashRight}
+          alt=""
+          style={{
+            position: 'absolute', bottom: `${-parallax * 0.8}px`, left: '-60%',
+            height: '90vh', width: 'auto', maxWidth: 'none',
+            opacity: 0.7,
+            filter: `brightness(0.75) drop-shadow(0 0 30px ${player.glowRight})`,
+          }}
+        />
+        <div style={{ position: 'absolute', inset: 0,
+          background: 'linear-gradient(to right, #0a0810 0%, transparent 40%)',
+        }}/>
+      </div>
     </>
   );
 }
@@ -1514,7 +1529,25 @@ function DarkShonenApp(){
   );
 }
 
-ReactDOM.createRoot(document.getElementById('root')).render(<DarkShonenApp/>);
+class ErrorBoundary extends React.Component {
+  constructor(props) { super(props); this.state = { error: null }; }
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) return (
+      <div style={{minHeight:'100vh',background:'#0a0810',color:'#e8e0f0',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',fontFamily:'monospace',padding:'40px'}}>
+        <h1 style={{color:'#ff2e5b',fontSize:'24px',marginBottom:'16px'}}>ERRORE DI RENDERING</h1>
+        <p style={{color:'#a090c0',marginBottom:'24px'}}>{this.state.error.message}</p>
+        <button onClick={() => { localStorage.removeItem('ds-selected-player'); window.location.reload(); }}
+          style={{background:'#ff2e5b',color:'#fff',border:'none',padding:'12px 24px',cursor:'pointer',fontSize:'16px'}}>
+          RICARICA
+        </button>
+      </div>
+    );
+    return this.props.children;
+  }
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<ErrorBoundary><DarkShonenApp/></ErrorBoundary>);
 </script>
 </body>
 </html>
