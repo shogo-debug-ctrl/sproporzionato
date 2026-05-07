@@ -148,6 +148,10 @@ export default {
             t.win = ti ? ti.win : false;
           }
 
+          // Team kills for KP calculation
+          const myTeam = teams.find(t => t.players.some(p => p.isTarget));
+          const teamKills = myTeam ? myTeam.players.reduce((s, p) => s + p.kills, 0) : 1;
+
           matches.push({
             matchId: match.metadata.matchId,
             gameCreation: info.gameCreation,
@@ -162,6 +166,7 @@ export default {
             visionScore: player.visionScore,
             damageDealt: player.totalDamageDealtToChampions,
             goldEarned: player.goldEarned,
+            teamKills,
             teams,
           });
         }

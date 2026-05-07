@@ -624,6 +624,50 @@ function DSStats({palette,intensity,halftone,showStreak,tiltAmt,d}){
   );
 }
 
+function DSStats2({palette,intensity,halftone,tiltAmt,d}){
+  const matches = d.matches || [];
+
+  // CS/min average
+  const csPerMin = matches.length ? (matches.reduce((s,m) => s + m.cs / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(1) : '0.0';
+
+  // DMG/min average
+  const dmgPerMin = matches.length ? (matches.reduce((s,m) => s + m.damageDealt / Math.max(1, m.durationSec / 60), 0) / matches.length).toFixed(0) : '0';
+
+  // Kill Participation average
+  const kpAvg = matches.length ? Math.round(matches.reduce((s,m) => {
+    const tk = m.teamKills || 1;
+    return s + ((m.kills + m.assists) / Math.max(1, tk)) * 100;
+  }, 0) / matches.length) : 0;
+
+  // WR today
+  const today = new Date().toISOString().slice(0, 10);
+  const todayMatches = matches.filter(m => m.date && m.date.slice(0, 10) === today);
+  const todayWins = todayMatches.filter(m => m.result === 'W').length;
+  const todayWR = todayMatches.length ? Math.round(todayWins / todayMatches.length * 100) : null;
+  const todaySub = todayMatches.length ? `${todayWins}W \u2014 ${todayMatches.length - todayWins}L oggi` : 'nessuna partita oggi';
+
+  const items = [
+    { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 7 ? 'farming god!!' : parseFloat(csPerMin) >= 5.5 ? 'solido' : 'da migliorare', c: palette.tertiary, t: -1 },
+    { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 800 ? 'carry mode!!' : parseInt(dmgPerMin) >= 500 ? 'buon impatto' : 'supportivo', c: palette.primary, t: 1 },
+    { l: 'KILL PART.', v: `${kpAvg}%`, s: kpAvg >= 65 ? 'ovunque!!' : kpAvg >= 50 ? 'presente' : 'gioca solo', c: '#a86bff', t: -1 },
+    { l: 'WR OGGI', v: todayWR !== null ? `${todayWR}%` : '--', s: todaySub, c: todayWR !== null ? (todayWR >= 55 ? NEON_GREEN : palette.primary) : D_DIM, t: 1 },
+  ];
+
+  return (
+    <div className="ds-stats-grid" style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:'14px',marginBottom:'24px'}}>
+      {items.map((s,i)=>(
+        <MangaPanelDark key={i} tilt={s.t*tiltAmt} accent={s.c} intensity={intensity} halftone={halftone} style={{padding:'14px 16px'}}>
+          <div style={{position:'relative'}}>
+            <div style={{...dsBase.display,fontSize:'11px',letterSpacing:'0.2em',color:s.c}}>{s.l}</div>
+            <div style={{...dsBase.display,fontSize:'clamp(32px,4vw,52px)',lineHeight:1,color:s.c,textShadow:`0 0 ${20*intensity}px ${s.c}88, 2px 2px 0 ${D_INK}`,marginTop:'4px'}}>{s.v}</div>
+            <div style={{...dsBase.hand,fontSize:'15px',color:D_LINE,marginTop:'2px'}}>{s.s}</div>
+          </div>
+        </MangaPanelDark>
+      ))}
+    </div>
+  );
+}
+
 function DSProgress({palette,intensity,halftone,d}){
   const startAbs=absLP("EMERALD","II",0);
   return(
@@ -1127,6 +1171,7 @@ function DarkShonenApp(){
         <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
 
         <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
+        <DSStats2 palette={palette} intensity={intensity} halftone={halftone} tiltAmt={tiltAmt} d={d}/>
         <DSProgress palette={palette} intensity={intensity} halftone={halftone} d={d}/>
         <DSMilestones palette={palette} intensity={intensity} tiltAmt={tiltAmt} d={d}/>
 
