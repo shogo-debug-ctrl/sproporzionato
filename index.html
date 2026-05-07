@@ -130,33 +130,23 @@ function useLiveData() {
 
   const fetchData = React.useCallback(async () => {
     try {
-      // Use GitHub API — always returns fresh data, no CDN cache
-      const apiUrl = 'https://api.github.com/repos/shogo-debug-ctrl/sproporzionato/contents/data.json';
-      const res = await fetch(apiUrl, {
-        headers: { 'Accept': 'application/vnd.github.raw+json' },
-        cache: 'no-store',
-      });
+      // Cloudflare Worker — always fresh, 2 min cache, CORS OK
+      const res = await fetch('https://sproporzionato-api.amedeo-shogo.workers.dev/api/data', { cache: 'no-store' });
       if (!res.ok) throw new Error('HTTP ' + res.status);
       const json = await res.json();
+      if (json.error) throw new Error(json.error);
       setData(json);
       setError(null);
       setLastUpdate(new Date());
       try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
     } catch (err) {
-      // Fallback: raw.githubusercontent then local
+      // Fallback: GitHub API then local
       try {
-        const res2 = await fetch('https://raw.githubusercontent.com/shogo-debug-ctrl/sproporzionato/main/data.json?t=' + Date.now());
+        const res2 = await fetch('https://api.github.com/repos/shogo-debug-ctrl/sproporzionato/contents/data.json', {
+          headers: { 'Accept': 'application/vnd.github.raw+json' }, cache: 'no-store',
+        });
         if (res2.ok) {
           const json = await res2.json();
-          setData(json); setError(null); setLastUpdate(new Date());
-          try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
-          return;
-        }
-      } catch {}
-      try {
-        const res3 = await fetch('data.json?t=' + Date.now());
-        if (res3.ok) {
-          const json = await res3.json();
           setData(json); setError(null); setLastUpdate(new Date());
           try { localStorage.setItem('ds-cache', JSON.stringify(json)); } catch {}
           return;
