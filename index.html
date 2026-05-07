@@ -526,14 +526,10 @@ function useLiveGame(puuid) {
   return { live, champMap };
 }
 
-function LiveGameBanner({ palette, intensity, puuid, playerName }) {
-  const { live, champMap } = useLiveGame(puuid);
-
-  if (!live || !live.inGame) return null;
-
+function LiveGameBannerInner({ palette, intensity, live, champMap, playerName }) {
   const champName = (id) => {
     const name = champMap[String(id)];
-    return name ? fmtChamp(name) : `#${id}`;
+    return name ? fmtChamp(name) : `Champ ${id}`;
   };
   const champIcon = (id) => {
     const name = champMap[String(id)];
@@ -548,6 +544,9 @@ function LiveGameBanner({ palette, intensity, puuid, playerName }) {
   }, []);
   const mins = Math.floor(elapsed / 60);
   const secs = elapsed % 60;
+
+  const teams = Array.isArray(live.teams) ? live.teams : [];
+  const gameMode = typeof live.gameMode === 'string' ? live.gameMode : 'UNKNOWN';
 
   return (
     <MangaPanelDark accent={palette.primary} intensity={intensity * 1.5} style={{
@@ -577,44 +576,58 @@ function LiveGameBanner({ palette, intensity, puuid, playerName }) {
       </div>
 
       <div style={{ ...dsBase.hand, fontSize: '16px', color: D_DIM, marginBottom: '12px' }}>
-        {live.gameMode === 'CLASSIC' ? 'Ranked Solo/Duo' : live.gameMode} {"\u00B7"} sta giocando ora!!
+        {gameMode === 'CLASSIC' ? 'Ranked Solo/Duo' : gameMode} {"\u00B7"} sta giocando ora!!
       </div>
 
       {/* Teams */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-        {live.teams.map((team, ti) => (
-          <div key={ti} style={{ background: D_INK, border: `2px solid ${ti === 0 ? palette.tertiary + '55' : palette.primary + '55'}`, padding: '10px' }}>
-            <div style={{ ...dsBase.display, fontSize: '12px', letterSpacing: '0.15em', marginBottom: '8px',
-              color: ti === 0 ? palette.tertiary : palette.primary }}>
-              TEAM {ti + 1} {team.players.some(p => p.isTarget) ? `\u00B7 ${"\u2605"} ${playerName}` : ''}
-            </div>
-            <div style={{ display: 'grid', gap: '4px' }}>
-              {team.players.map((p, pi) => {
-                const icon = champIcon(p.champ);
-                return (
-                  <div key={pi} style={{
-                    display: 'flex', alignItems: 'center', gap: '8px',
-                    padding: '3px 6px',
-                    background: p.isTarget ? 'rgba(255,210,58,0.1)' : 'transparent',
-                    border: p.isTarget ? `1px solid ${palette.secondary}44` : '1px solid transparent',
-                  }}>
-                    {icon && <img src={icon} alt="" style={{ width: '24px', height: '24px', borderRadius: '4px', border: `1px solid ${D_DIM}` }}/>}
-                    <span style={{
-                      ...dsBase.display, fontSize: '13px',
-                      color: p.isTarget ? palette.secondary : D_LINE,
+        {teams.map((team, ti) => {
+          const players = Array.isArray(team.players) ? team.players : [];
+          return (
+            <div key={ti} style={{ background: D_INK, border: `2px solid ${ti === 0 ? palette.tertiary + '55' : palette.primary + '55'}`, padding: '10px' }}>
+              <div style={{ ...dsBase.display, fontSize: '12px', letterSpacing: '0.15em', marginBottom: '8px',
+                color: ti === 0 ? palette.tertiary : palette.primary }}>
+                {'TEAM ' + (ti + 1) + (players.some(p => p.isTarget) ? ' \u00B7 \u2605 ' + String(playerName) : '')}
+              </div>
+              <div style={{ display: 'grid', gap: '4px' }}>
+                {players.map((p, pi) => {
+                  const icon = champIcon(p.champ);
+                  return (
+                    <div key={pi} style={{
+                      display: 'flex', alignItems: 'center', gap: '8px',
+                      padding: '3px 6px',
+                      background: p.isTarget ? 'rgba(255,210,58,0.1)' : 'transparent',
+                      border: p.isTarget ? `1px solid ${palette.secondary}44` : '1px solid transparent',
                     }}>
-                      {champName(p.champ)}
-                    </span>
-                    {p.isTarget && <span style={{ ...dsBase.hand, fontSize: '11px', color: palette.secondary }}>{"\u2605"}</span>}
-                  </div>
-                );
-              })}
+                      {icon && <img src={icon} alt="" style={{ width: '24px', height: '24px', borderRadius: '4px', border: `1px solid ${D_DIM}` }}/>}
+                      <span style={{
+                        ...dsBase.display, fontSize: '13px',
+                        color: p.isTarget ? palette.secondary : D_LINE,
+                      }}>
+                        {champName(p.champ)}
+                      </span>
+                      {p.isTarget && <span style={{ ...dsBase.hand, fontSize: '11px', color: palette.secondary }}>{"\u2605"}</span>}
+                    </div>
+                  );
+                })}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </MangaPanelDark>
   );
+}
+
+function LiveGameBanner({ palette, intensity, puuid, playerName }) {
+  const { live, champMap } = useLiveGame(puuid);
+  if (!live || !live.inGame) return null;
+  try {
+    return <LiveGameBannerInner palette={palette} intensity={intensity} live={live} champMap={champMap} playerName={playerName}/>;
+  } catch (e) {
+    console.error('LiveGameBanner error:', e);
+    return null;
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
