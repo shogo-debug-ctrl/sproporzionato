@@ -1222,14 +1222,14 @@ const __SELECTOR_STYLE = `
   .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;width:90%;margin-bottom:24px}
   @media(max-width:900px){.ps-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:500px){.ps-grid{grid-template-columns:1fr}}
-  .ps-card{position:relative;border:3px solid #f5f0e8;background:#15111c;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.3,1.6,.4,1),box-shadow .25s;box-shadow:4px 4px 0 #f5f0e8;min-height:220px;animation:psCardIn .4s ease-out both;aspect-ratio:3/4}
+  .ps-card{position:relative;border:3px solid #f5f0e8;background:#15111c;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.3,1.6,.4,1),box-shadow .25s;box-shadow:4px 4px 0 #f5f0e8;min-height:220px;animation:psCardIn .4s ease-out both}
   .ps-card:hover{transform:scale(1.05) rotate(-1deg);box-shadow:4px 4px 0 #f5f0e8,0 0 30px rgba(255,210,58,0.3)}
   .ps-card-bg{position:absolute;inset:0;background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.4;filter:brightness(0.8)}
   .ps-card-content{position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px}
-  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(20px,3vw,28px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.04em;line-height:1.1;word-break:break-word}
+  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(16px,2.2vw,26px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.04em;line-height:1.1;white-space:nowrap}
   .ps-card-rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:#7c7088;margin-top:6px}
   .ps-card-role{font-family:"Permanent Marker","Caveat",cursive;font-size:14px;color:#ffd23a;margin-top:4px}
-  .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px;max-width:400px;width:90%}
+  .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px;max-width:1100px;width:90%}
   .ps-compare:hover{transform:scale(1.03);box-shadow:0 0 24px rgba(255,210,58,0.3)}
   .ps-compare-title{font-family:"Bangers","Anton",Impact,sans-serif;font-size:32px;color:#ffd23a;text-shadow:2px 2px 0 #0a0810;letter-spacing:0.1em}
   .ps-compare-sub{font-family:"Permanent Marker","Caveat",cursive;font-size:16px;color:#7c7088;margin-top:4px}
@@ -1343,14 +1343,11 @@ function ComparisonView({ palette, intensity }) {
           <thead>
             <tr>
               <th style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.15em', padding: '10px 8px', textAlign: 'left', borderBottom: `2px solid ${D_LINE}`, width: '100px' }}></th>
-              {PLAYERS.map(p => {
-                const short = { sproporzionato:'SPROPO', shogo:'SHOG\u00D8', lee:'LEE', invexmood:'INVEX' };
-                return (
-                  <th key={p.id} style={{ ...dsBase.display, fontSize: '14px', color: palette.secondary, padding: '10px 6px', textAlign: 'center', borderBottom: `2px solid ${D_LINE}`, textShadow: `0 0 8px ${palette.secondary}44`, wordBreak: 'break-word' }}>
-                    {short[p.id] || p.name.replace('!','')}
-                  </th>
-                );
-              })}
+              {PLAYERS.map(p => (
+                <th key={p.id} style={{ ...dsBase.display, fontSize: '14px', color: palette.secondary, padding: '10px 8px', textAlign: 'center', borderBottom: `2px solid ${D_LINE}`, textShadow: `0 0 8px ${palette.secondary}44`, whiteSpace: 'nowrap' }}>
+                  {p.name.replace('!','')}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
