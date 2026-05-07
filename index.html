@@ -647,8 +647,8 @@ function DSStats2({palette,intensity,halftone,tiltAmt,d}){
   const todaySub = todayMatches.length ? `${todayWins}W \u2014 ${todayMatches.length - todayWins}L oggi` : 'nessuna partita oggi';
 
   const items = [
-    { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 7 ? 'farming god!!' : parseFloat(csPerMin) >= 5.5 ? 'solido' : 'da migliorare', c: palette.tertiary, t: -1 },
-    { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 800 ? 'carry mode!!' : parseInt(dmgPerMin) >= 500 ? 'buon impatto' : 'supportivo', c: palette.primary, t: 1 },
+    { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 10 ? 'GODLIKE!!' : parseFloat(csPerMin) >= 7.5 ? 'buono' : 'mediocre', c: parseFloat(csPerMin) >= 10 ? palette.secondary : parseFloat(csPerMin) >= 7.5 ? palette.tertiary : palette.primary, t: -1 },
+    { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 1000 ? 'carry mode!!' : parseInt(dmgPerMin) >= 850 ? 'buono' : 'mediocre', c: parseInt(dmgPerMin) >= 1000 ? palette.secondary : parseInt(dmgPerMin) >= 850 ? palette.tertiary : palette.primary, t: 1 },
     { l: 'KILL PART.', v: `${kpAvg}%`, s: kpAvg >= 65 ? 'ovunque!!' : kpAvg >= 50 ? 'presente' : 'gioca solo', c: '#a86bff', t: -1 },
     { l: 'WR OGGI', v: todayWR !== null ? `${todayWR}%` : '--', s: todaySub, c: todayWR !== null ? (todayWR >= 55 ? NEON_GREEN : palette.primary) : D_DIM, t: 1 },
   ];
