@@ -2,7 +2,14 @@
 // Deploy: npx wrangler deploy
 // Set secret: npx wrangler secret put RIOT_API_KEY
 
-const PUUID = 'Cw6nwb9CaamINcY-BcRfpYMHBWXijBj4lwcQdqWvUGXoTRjUViomuWLP4IzqAJxqTE5d5xUy2MyNOA';
+const DEFAULT_PUUID = 'Cw6nwb9CaamINcY-BcRfpYMHBWXijBj4lwcQdqWvUGXoTRjUViomuWLP4IzqAJxqTE5d5xUy2MyNOA';
+// Allowed PUUIDs (whitelist to prevent abuse)
+const ALLOWED_PUUIDS = new Set([
+  DEFAULT_PUUID,
+  '1tv989ay4R85EJ5Iabyc1Xwy-tCV1AxI5CH5pDMplbhwY0jN-eDe9i1aDou7rAVN5E4afT6mKTgNuQ',  // Shogø
+  'Hb-Xn77JUNKM-4-H5adKkX-hI9hdpO4-ict9RvfWpqXL8a0EA0Yz6zDXp03hTHUYX3ISKI96BVsltg',  // Lee Mortacci Tua
+  's_Q0kMVXpaoZdKDupYZsszUMAcJFAHYVzvyOVLEZlW-n4j882yz9Ui0ccRCkIDas1cYm7YOgHNyB8w',  // IηVεχMσσd
+]);
 const REGION = 'euw1';
 const ROUTING = 'europe';
 const MATCH_COUNT = 30;
@@ -23,12 +30,18 @@ export default {
 
     const url = new URL(request.url);
 
+    // Resolve PUUID from query param or default
+    const reqPuuid = url.searchParams.get('puuid') || DEFAULT_PUUID;
+    if (!ALLOWED_PUUIDS.has(reqPuuid)) {
+      return new Response(JSON.stringify({ error: 'PUUID not allowed' }), { status: 403, headers: CORS_HEADERS });
+    }
+
     // Live game endpoint — no cache, always fresh
     if (url.pathname === '/api/live') {
       try {
         const API_KEY = env.RIOT_API_KEY;
         const res = await fetch(
-          `https://${REGION}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${PUUID}`,
+          `https://${REGION}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${reqPuuid}`,
           { headers: { 'X-Riot-Token': API_KEY } }
         );
         if (res.status === 404) {
@@ -36,7 +49,7 @@ export default {
         }
         if (!res.ok) throw new Error('Spectator API: ' + res.status);
         const game = await res.json();
-        const target = game.participants.find(p => p.puuid === PUUID);
+        const target = game.participants.find(p => p.puuid === reqPuuid);
         const elapsed = game.gameLength > 0 ? game.gameLength : 0;
         const mins = Math.floor(elapsed / 60);
         const secs = elapsed % 60;
@@ -44,12 +57,12 @@ export default {
           { teamId: 100, players: game.participants.filter(p => p.teamId === 100).map(p => ({
             name: p.riotId || p.summonerId || '?',
             champ: p.championId,
-            isTarget: p.puuid === PUUID,
+            isTarget: p.puuid === reqPuuid,
           })) },
           { teamId: 200, players: game.participants.filter(p => p.teamId === 200).map(p => ({
             name: p.riotId || p.summonerId || '?',
             champ: p.championId,
-            isTarget: p.puuid === PUUID,
+            isTarget: p.puuid === reqPuuid,
           })) },
         ];
         return new Response(JSON.stringify({
@@ -95,14 +108,14 @@ export default {
       };
 
       // Fetch account
-      const account = await riotFetch(`https://${ROUTING}.api.riotgames.com/riot/account/v1/accounts/by-puuid/${PUUID}`);
+      const account = await riotFetch(`https://${ROUTING}.api.riotgames.com/riot/account/v1/accounts/by-puuid/${reqPuuid}`);
 
       // Fetch rank
-      const leagues = await riotFetch(`https://${REGION}.api.riotgames.com/lol/league/v4/entries/by-puuid/${PUUID}`);
+      const leagues = await riotFetch(`https://${REGION}.api.riotgames.com/lol/league/v4/entries/by-puuid/${reqPuuid}`);
       const soloQ = leagues.find(l => l.queueType === 'RANKED_SOLO_5x5');
 
       // Fetch match IDs
-      const matchIds = await riotFetch(`https://${ROUTING}.api.riotgames.com/lol/match/v5/matches/by-puuid/${PUUID}/ids?count=${MATCH_COUNT}&type=ranked`);
+      const matchIds = await riotFetch(`https://${ROUTING}.api.riotgames.com/lol/match/v5/matches/by-puuid/${reqPuuid}/ids?count=${MATCH_COUNT}&type=ranked`);
 
       // Fetch match details (parallel in batches of 5)
       const matches = [];
@@ -116,7 +129,7 @@ export default {
           const match = r.value;
           const info = match.info;
           if (info.queueId !== 420) continue;
-          const player = info.participants.find(p => p.puuid === PUUID);
+          const player = info.participants.find(p => p.puuid === reqPuuid);
           if (!player) continue;
           const dur = info.gameDuration;
           const mins = Math.floor(dur / 60);
@@ -139,7 +152,7 @@ export default {
                 visionScore: p.visionScore,
                 items: [p.item0, p.item1, p.item2, p.item3, p.item4, p.item5, p.item6],
                 level: p.champLevel,
-                isTarget: p.puuid === PUUID,
+                isTarget: p.puuid === reqPuuid,
               });
             }
           }
@@ -175,7 +188,7 @@ export default {
       matches.sort((a, b) => b.gameCreation - a.gameCreation);
 
       const output = {
-        summoner: { name: account.gameName, tag: account.tagLine, region: 'EUW', puuid: PUUID },
+        summoner: { name: account.gameName, tag: account.tagLine, region: 'EUW', puuid: reqPuuid },
         rank: soloQ ? {
           tier: soloQ.tier, rank: soloQ.rank, lp: soloQ.leaguePoints,
           wins: soloQ.wins, losses: soloQ.losses,
