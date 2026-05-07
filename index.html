@@ -1339,15 +1339,18 @@ function ComparisonView({ palette, intensity }) {
       </div>
 
       <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', minWidth: '600px' }}>
+        <table style={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed' }}>
           <thead>
             <tr>
-              <th style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.15em', padding: '10px 12px', textAlign: 'left', borderBottom: `2px solid ${D_LINE}` }}></th>
-              {PLAYERS.map(p => (
-                <th key={p.id} style={{ ...dsBase.display, fontSize: '16px', color: palette.secondary, padding: '10px 12px', textAlign: 'center', borderBottom: `2px solid ${D_LINE}`, textShadow: `0 0 8px ${palette.secondary}44` }}>
-                  {p.name.replace('!','')}
-                </th>
-              ))}
+              <th style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.15em', padding: '10px 8px', textAlign: 'left', borderBottom: `2px solid ${D_LINE}`, width: '100px' }}></th>
+              {PLAYERS.map(p => {
+                const short = { sproporzionato:'SPROPO', shogo:'SHOG\u00D8', lee:'LEE', invexmood:'INVEX' };
+                return (
+                  <th key={p.id} style={{ ...dsBase.display, fontSize: '14px', color: palette.secondary, padding: '10px 6px', textAlign: 'center', borderBottom: `2px solid ${D_LINE}`, textShadow: `0 0 8px ${palette.secondary}44`, wordBreak: 'break-word' }}>
+                    {short[p.id] || p.name.replace('!','')}
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody>
@@ -1356,10 +1359,10 @@ function ComparisonView({ palette, intensity }) {
               const bestIdx = row.best(vals);
               return (
                 <tr key={ri} style={{ background: ri % 2 === 0 ? D_INK : 'rgba(255,255,255,0.02)' }}>
-                  <td style={{ ...dsBase.display, fontSize: '12px', color: D_DIM, letterSpacing: '0.1em', padding: '12px', borderBottom: `1px solid ${D_DIM}33` }}>{row.label}</td>
+                  <td style={{ ...dsBase.display, fontSize: '11px', color: D_DIM, letterSpacing: '0.1em', padding: '10px 8px', borderBottom: `1px solid ${D_DIM}33` }}>{row.label}</td>
                   {vals.map((v, vi) => (
                     <td key={vi} style={{
-                      ...dsBase.display, fontSize: '20px', textAlign: 'center', padding: '12px',
+                      ...dsBase.display, fontSize: '16px', textAlign: 'center', padding: '10px 6px',
                       borderBottom: `1px solid ${D_DIM}33`,
                       color: vi === bestIdx ? NEON_GREEN : D_LINE,
                       textShadow: vi === bestIdx ? `0 0 12px ${NEON_GREEN}88` : 'none',
@@ -1412,8 +1415,8 @@ function PlayerDashboard({ player, tweaks, setTweak }) {
         Season record: {d.rank.wins}W {d.rank.losses}L ({Math.round(d.rank.wins/(d.rank.wins+d.rank.losses)*100)}%) {d.rank.hotStreak ? `${"\u00B7"} HOT STREAK \uD83D\uDD25` : ''}
       </div>}
 
-      <LiveGameBanner palette={palette} intensity={intensity} puuid={player.puuid} playerName={player.name}/>
       <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank} playerName={player.name}/>
+      <LiveGameBanner palette={palette} intensity={intensity} puuid={player.puuid} playerName={player.name}/>
 
       <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
       <DSStats2 palette={palette} intensity={intensity} halftone={halftone} tiltAmt={tiltAmt} d={d} playerRole={player.role}/>
@@ -1497,8 +1500,7 @@ function DarkShonenApp(){
       {/* Player Selector Popup */}
       <PlayerSelector visible={selectorOpen} onSelect={handleSelect} onClose={() => { if (selectedId) setSelectorOpen(false); }}/>
 
-      {/* Champion splash art on side margins */}
-      {!isCompare && <ChampionSplashSides player={player}/>}
+      {/* Champion splash art disabled for now */}
 
       <div className="ds-container" style={{maxWidth:'1280px',margin:'0 auto',padding:compact?'24px 32px':'36px 44px 48px',boxSizing:'border-box',position:'relative',zIndex:1}}>
 
