@@ -22,6 +22,54 @@ export default {
     }
 
     const url = new URL(request.url);
+
+    // Live game endpoint — no cache, always fresh
+    if (url.pathname === '/api/live') {
+      try {
+        const API_KEY = env.RIOT_API_KEY;
+        const res = await fetch(
+          `https://${REGION}.api.riotgames.com/lol/spectator/v5/active-games/by-summoner/${PUUID}`,
+          { headers: { 'X-Riot-Token': API_KEY } }
+        );
+        if (res.status === 404) {
+          return new Response(JSON.stringify({ inGame: false }), { headers: CORS_HEADERS });
+        }
+        if (!res.ok) throw new Error('Spectator API: ' + res.status);
+        const game = await res.json();
+        const target = game.participants.find(p => p.puuid === PUUID);
+        const elapsed = game.gameLength > 0 ? game.gameLength : 0;
+        const mins = Math.floor(elapsed / 60);
+        const secs = elapsed % 60;
+        const teams = [
+          { teamId: 100, players: game.participants.filter(p => p.teamId === 100).map(p => ({
+            name: p.riotId || p.summonerId || '?',
+            champ: p.championId,
+            isTarget: p.puuid === PUUID,
+          })) },
+          { teamId: 200, players: game.participants.filter(p => p.teamId === 200).map(p => ({
+            name: p.riotId || p.summonerId || '?',
+            champ: p.championId,
+            isTarget: p.puuid === PUUID,
+          })) },
+        ];
+        return new Response(JSON.stringify({
+          inGame: true,
+          gameMode: game.gameMode,
+          gameType: game.gameType,
+          mapId: game.mapId,
+          gameLength: `${mins}:${String(secs).padStart(2, '0')}`,
+          gameLengthSec: elapsed,
+          gameStartTime: game.gameStartTime,
+          myChamp: target ? target.championId : null,
+          myTeamId: target ? target.teamId : null,
+          teams,
+          bannedChampions: game.bannedChampions || [],
+        }), { headers: CORS_HEADERS });
+      } catch (err) {
+        return new Response(JSON.stringify({ inGame: false, error: err.message }), { headers: CORS_HEADERS });
+      }
+    }
+
     if (url.pathname !== '/api/data') {
       return new Response(JSON.stringify({ error: 'Not found' }), { status: 404, headers: CORS_HEADERS });
     }

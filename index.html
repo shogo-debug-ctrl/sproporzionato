@@ -423,6 +423,138 @@ function MangaPanelDark({children,style,tilt=0,hatch,accent=D_LINE,intensity=1,h
 }
 
 // ═══════════════════════════════════════════════════════════════
+// LIVE GAME INDICATOR
+// ═══════════════════════════════════════════════════════════════
+const LIVE_API = 'https://sproporzionato-api.amedeo-shogo.workers.dev/api/live';
+const DDRAGON_VER = '16.9.1';
+
+// Champion ID → name cache
+let champIdMap = null;
+async function getChampIdMap() {
+  if (champIdMap) return champIdMap;
+  try {
+    const res = await fetch(`https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VER}/data/en_US/champion.json`);
+    const data = await res.json();
+    champIdMap = {};
+    for (const [name, info] of Object.entries(data.data)) {
+      champIdMap[info.key] = name;
+    }
+    return champIdMap;
+  } catch { return {}; }
+}
+
+function useLiveGame() {
+  const [live, setLive] = React.useState(null);
+  const [champMap, setChampMap] = React.useState({});
+
+  React.useEffect(() => {
+    getChampIdMap().then(setChampMap);
+    const check = async () => {
+      try {
+        const res = await fetch(LIVE_API, { cache: 'no-store' });
+        if (res.ok) setLive(await res.json());
+      } catch {}
+    };
+    check();
+    const t = setInterval(check, 30000); // Check every 30s
+    return () => clearInterval(t);
+  }, []);
+
+  return { live, champMap };
+}
+
+function LiveGameBanner({ palette, intensity }) {
+  const { live, champMap } = useLiveGame();
+
+  if (!live || !live.inGame) return null;
+
+  const champName = (id) => {
+    const name = champMap[String(id)];
+    return name ? fmtChamp(name) : `#${id}`;
+  };
+  const champIcon = (id) => {
+    const name = champMap[String(id)];
+    return name ? `https://ddragon.leagueoflegends.com/cdn/${DDRAGON_VER}/img/champion/${name}.png` : null;
+  };
+
+  // Live timer
+  const [elapsed, setElapsed] = React.useState(live.gameLengthSec || 0);
+  React.useEffect(() => {
+    const t = setInterval(() => setElapsed(e => e + 1), 1000);
+    return () => clearInterval(t);
+  }, []);
+  const mins = Math.floor(elapsed / 60);
+  const secs = elapsed % 60;
+
+  return (
+    <MangaPanelDark accent={palette.primary} intensity={intensity * 1.5} style={{
+      padding: '16px 20px', marginBottom: '20px',
+      background: 'linear-gradient(135deg, #1a0a14 0%, #15111c 50%, #0a1422 100%)',
+      border: `3px solid ${palette.primary}`,
+      boxShadow: `5px 5px 0 ${D_LINE}, 0 0 40px ${palette.primary}44, inset 0 0 30px ${palette.primary}11`,
+      animation: 'livePulse 2s ease-in-out infinite',
+    }}>
+      <style>{`@keyframes livePulse{0%,100%{box-shadow:5px 5px 0 ${D_LINE},0 0 40px ${palette.primary}44}50%{box-shadow:5px 5px 0 ${D_LINE},0 0 60px ${palette.primary}66}}`}</style>
+
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <div style={{
+            width: '12px', height: '12px', borderRadius: '50%', background: '#ff2e5b',
+            boxShadow: '0 0 12px #ff2e5b, 0 0 24px #ff2e5b88',
+            animation: 'liveDot 1s ease-in-out infinite',
+          }}/>
+          <style>{`@keyframes liveDot{0%,100%{opacity:1}50%{opacity:0.4}}`}</style>
+          <div style={{ ...dsBase.display, fontSize: '28px', color: palette.primary, textShadow: `0 0 20px ${palette.primary}88` }}>
+            IN GAME NOW!!
+          </div>
+        </div>
+        <div style={{ ...dsBase.display, fontSize: '32px', color: palette.secondary, textShadow: `0 0 12px ${palette.secondary}66` }}>
+          {mins}:{String(secs).padStart(2, '0')}
+        </div>
+      </div>
+
+      <div style={{ ...dsBase.hand, fontSize: '16px', color: D_DIM, marginBottom: '12px' }}>
+        {live.gameMode === 'CLASSIC' ? 'Ranked Solo/Duo' : live.gameMode} {"\u00B7"} sta giocando ora!!
+      </div>
+
+      {/* Teams */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+        {live.teams.map((team, ti) => (
+          <div key={ti} style={{ background: D_INK, border: `2px solid ${ti === 0 ? palette.tertiary + '55' : palette.primary + '55'}`, padding: '10px' }}>
+            <div style={{ ...dsBase.display, fontSize: '12px', letterSpacing: '0.15em', marginBottom: '8px',
+              color: ti === 0 ? palette.tertiary : palette.primary }}>
+              TEAM {ti + 1} {team.players.some(p => p.isTarget) ? `\u00B7 ${"\u2605"} SPROPORZIONATO` : ''}
+            </div>
+            <div style={{ display: 'grid', gap: '4px' }}>
+              {team.players.map((p, pi) => {
+                const icon = champIcon(p.champ);
+                return (
+                  <div key={pi} style={{
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    padding: '3px 6px',
+                    background: p.isTarget ? 'rgba(255,210,58,0.1)' : 'transparent',
+                    border: p.isTarget ? `1px solid ${palette.secondary}44` : '1px solid transparent',
+                  }}>
+                    {icon && <img src={icon} alt="" style={{ width: '24px', height: '24px', borderRadius: '4px', border: `1px solid ${D_DIM}` }}/>}
+                    <span style={{
+                      ...dsBase.display, fontSize: '13px',
+                      color: p.isTarget ? palette.secondary : D_LINE,
+                    }}>
+                      {champName(p.champ)}
+                    </span>
+                    {p.isTarget && <span style={{ ...dsBase.hand, fontSize: '11px', color: palette.secondary }}>{"\u2605"}</span>}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </MangaPanelDark>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
 // DASHBOARD SECTIONS
 // ═══════════════════════════════════════════════════════════════
 
@@ -991,6 +1123,7 @@ function DarkShonenApp(){
           Season record: {d.rank.wins}W {d.rank.losses}L ({Math.round(d.rank.wins/(d.rank.wins+d.rank.losses)*100)}%) {d.rank.hotStreak ? `${"\u00B7"} HOT STREAK \uD83D\uDD25` : ''}
         </div>}
 
+        <LiveGameBanner palette={palette} intensity={intensity}/>
         <DSHeader palette={palette} intensity={intensity} soundFx={t.soundFx} rank={d.rank}/>
 
         <DSStats palette={palette} intensity={intensity} halftone={halftone} showStreak={t.showStreak} tiltAmt={tiltAmt} d={d}/>
