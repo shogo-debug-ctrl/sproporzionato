@@ -128,7 +128,7 @@ export default {
           if (r.status !== 'fulfilled') continue;
           const match = r.value;
           const info = match.info;
-          if (info.queueId !== 420 && info.queueId !== 440) continue; // Solo + Flex
+          if (info.queueId !== 420) continue; // Solo/Duo only
           const player = info.participants.find(p => p.puuid === reqPuuid);
           if (!player) continue;
           const dur = info.gameDuration;

@@ -142,8 +142,8 @@ const PLAYERS = [
     name: 'INVEXMOOD!',
     tag: 'EUW',
     puuid: 's_Q0kMVXpaoZdKDupYZsszUMAcJFAHYVzvyOVLEZlW-n4j882yz9Ui0ccRCkIDas1cYm7YOgHNyB8w',
-    splashLeft: 'assets/lux.png',
-    splashRight: 'assets/lux.png',
+    splashLeft: 'assets/lux.png?v=2',
+    splashRight: 'assets/lux.png?v=2',
     glowLeft: 'rgba(255,150,200,0.3)',
     glowRight: 'rgba(255,210,50,0.3)',
     role: 'mid',
@@ -392,7 +392,7 @@ function TweakSelect({label,value,options,onChange}){return(<TweakRow label={lab
 // ═══════════════════════════════════════════════════════════════
 function ChampionSplashSides({ player }) {
   const [scrollY, setScrollY] = React.useState(0);
-  const [wide, setWide] = React.useState(window.innerWidth > 1400);
+  const [wide, setWide] = React.useState(window.innerWidth > 1100);
 
   React.useEffect(() => {
     let ticking = false;
@@ -402,7 +402,7 @@ function ChampionSplashSides({ player }) {
         ticking = true;
       }
     };
-    const onResize = () => setWide(window.innerWidth > 1400);
+    const onResize = () => setWide(window.innerWidth > 1100);
     window.addEventListener('scroll', onScroll, { passive: true });
     window.addEventListener('resize', onResize);
     return () => { window.removeEventListener('scroll', onScroll); window.removeEventListener('resize', onResize); };
@@ -412,51 +412,35 @@ function ChampionSplashSides({ player }) {
 
   const parallax = scrollY * 0.15;
 
-  const sideWidth = 'calc((100vw - 1280px) / 2 + 40px)';
-
   return (
     <>
-      {/* Left champion */}
-      <div style={{
-        position: 'fixed', top: 0, left: 0, bottom: 0,
-        width: sideWidth, overflow: 'hidden',
-        pointerEvents: 'none', zIndex: 0,
-      }}>
-        <img
-          src={player.splashLeft}
-          alt=""
-          style={{
-            position: 'absolute', bottom: `${-parallax}px`, right: '-20%',
-            height: '90vh', width: 'auto', maxWidth: 'none',
-            opacity: 0.85,
-            filter: `brightness(0.9) drop-shadow(0 0 30px ${player.glowLeft})`,
-          }}
-        />
-        <div style={{ position: 'absolute', inset: 0,
-          background: 'linear-gradient(to left, #0a0810 0%, transparent 30%)',
-        }}/>
-      </div>
+      {/* Left champion — behind content */}
+      <img
+        src={player.splashLeft}
+        alt=""
+        style={{
+          position: 'fixed', bottom: `${-parallax}px`, left: 0,
+          height: '95vh', width: 'auto', maxWidth: 'none',
+          opacity: 0.6, pointerEvents: 'none', zIndex: 0,
+          filter: `brightness(0.7) drop-shadow(0 0 40px ${player.glowLeft})`,
+          maskImage: 'linear-gradient(to right, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
+          WebkitMaskImage: 'linear-gradient(to right, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
+        }}
+      />
 
-      {/* Right champion */}
-      <div style={{
-        position: 'fixed', top: 0, right: 0, bottom: 0,
-        width: sideWidth, overflow: 'hidden',
-        pointerEvents: 'none', zIndex: 0,
-      }}>
-        <img
-          src={player.splashRight}
-          alt=""
-          style={{
-            position: 'absolute', bottom: `${-parallax * 0.8}px`, left: '-20%',
-            height: '90vh', width: 'auto', maxWidth: 'none',
-            opacity: 0.85,
-            filter: `brightness(0.85) drop-shadow(0 0 30px ${player.glowRight})`,
-          }}
-        />
-        <div style={{ position: 'absolute', inset: 0,
-          background: 'linear-gradient(to right, #0a0810 0%, transparent 30%)',
-        }}/>
-      </div>
+      {/* Right champion — behind content */}
+      <img
+        src={player.splashRight}
+        alt=""
+        style={{
+          position: 'fixed', bottom: `${-parallax * 0.8}px`, right: 0,
+          height: '95vh', width: 'auto', maxWidth: 'none',
+          opacity: 0.6, pointerEvents: 'none', zIndex: 0,
+          filter: `brightness(0.7) drop-shadow(0 0 40px ${player.glowRight})`,
+          maskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
+          WebkitMaskImage: 'linear-gradient(to left, rgba(0,0,0,1) 20%, rgba(0,0,0,0.3) 60%, transparent 85%)',
+        }}
+      />
     </>
   );
 }
