@@ -1443,10 +1443,10 @@ function PlayerDashboard({ player, tweaks, setTweak }) {
       <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'12px'}}>
           <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>BATTLE LOG <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// LIVE</span></div>
-          <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, (d.allMatches||d.matches).length)} partite</div>
+          <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, d.matches.length)} partite</div>
         </div>
         <div style={{display:'grid',gap:'8px'}}>
-          {(d.allMatches||d.matches).slice(0,t.matchCount).map((m,i)=>(
+          {d.matches.slice(0,t.matchCount).map((m,i)=>(
             <DSMatchCard key={m.matchId} m={m} idx={i} palette={palette} intensity={intensity} speedLines={speedLines} compact={compact}/>
           ))}
         </div>
