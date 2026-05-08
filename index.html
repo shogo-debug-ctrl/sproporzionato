@@ -735,8 +735,11 @@ function DSStats2({palette,intensity,halftone,tiltAmt,d,playerRole}){
     ? { l: 'VISION/MIN', v: visionPerMin, s: parseFloat(visionPerMin) >= 2.5 ? 'WARDKING!!' : parseFloat(visionPerMin) >= 1.5 ? 'buono' : 'mediocre', c: parseFloat(visionPerMin) >= 2.5 ? palette.secondary : parseFloat(visionPerMin) >= 1.5 ? palette.tertiary : palette.primary, t: -1 }
     : { l: 'CS/MIN', v: csPerMin, s: parseFloat(csPerMin) >= 10 ? 'GODLIKE!!' : parseFloat(csPerMin) >= 7.5 ? 'buono' : 'mediocre', c: parseFloat(csPerMin) >= 10 ? palette.secondary : parseFloat(csPerMin) >= 7.5 ? palette.tertiary : palette.primary, t: -1 };
 
+  const kdaVal = matches.length ? ((matches.reduce((s,m) => s + m.kills, 0) + matches.reduce((s,m) => s + m.assists, 0)) / Math.max(1, matches.reduce((s,m) => s + m.deaths, 0))).toFixed(2) : '0.00';
+  const kdaNum = parseFloat(kdaVal);
+
   const stat2 = isSupport
-    ? { l: 'ASSIST/MIN', v: assistPerMin, s: parseFloat(assistPerMin) >= 1.0 ? 'playmaker!!' : parseFloat(assistPerMin) >= 0.6 ? 'buono' : 'mediocre', c: parseFloat(assistPerMin) >= 1.0 ? palette.secondary : parseFloat(assistPerMin) >= 0.6 ? palette.tertiary : palette.primary, t: 1 }
+    ? { l: 'KDA', v: kdaVal, s: kdaNum >= 5.0 ? 'GODLIKE!!' : kdaNum >= 3.5 ? 'ottimo' : kdaNum >= 2.5 ? 'buono' : 'mediocre', c: kdaNum >= 5.0 ? palette.secondary : kdaNum >= 3.5 ? NEON_GREEN : kdaNum >= 2.5 ? palette.tertiary : palette.primary, t: 1 }
     : { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 1000 ? 'carry mode!!' : parseInt(dmgPerMin) >= 850 ? 'buono' : 'mediocre', c: parseInt(dmgPerMin) >= 1000 ? palette.secondary : parseInt(dmgPerMin) >= 850 ? palette.tertiary : palette.primary, t: 1 };
 
   const items = [
