@@ -1235,10 +1235,10 @@ const __SELECTOR_STYLE = `
   .ps-card:hover{transform:scale(1.05) rotate(-1deg);box-shadow:4px 4px 0 #f5f0e8,0 0 30px rgba(255,210,58,0.3)}
   .ps-card-bg{position:absolute;inset:0;background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.4;filter:brightness(0.8)}
   .ps-card-content{position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px}
-  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(16px,2.2vw,26px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.04em;line-height:1.1;white-space:nowrap}
+  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(14px,1.8vw,24px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.02em;line-height:1.1}
   .ps-card-rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:#7c7088;margin-top:6px}
   .ps-card-role{font-family:"Permanent Marker","Caveat",cursive;font-size:14px;color:#ffd23a;margin-top:4px}
-  .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px;max-width:1100px;width:90%}
+  .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px}
   .ps-compare:hover{transform:scale(1.03);box-shadow:0 0 24px rgba(255,210,58,0.3)}
   .ps-compare-title{font-family:"Bangers","Anton",Impact,sans-serif;font-size:32px;color:#ffd23a;text-shadow:2px 2px 0 #0a0810;letter-spacing:0.1em}
   .ps-compare-sub{font-family:"Permanent Marker","Caveat",cursive;font-size:16px;color:#7c7088;margin-top:4px}
@@ -1272,24 +1272,25 @@ function PlayerSelector({ onSelect, visible, onClose }) {
           <div className="ps-title">SELECT YOUR FIGHTER!!</div>
           <div className="ps-sub">{"\u2192"} scegli chi monitorare</div>
 
-          <div className="ps-grid">
-            {PLAYERS.map((p, i) => {
-              const r = ranks[p.id];
-              const tierLabel = r ? `${r.tier} ${r.rank || ''} ${r.lp} LP` : 'Loading...';
-              return (
-                <div key={p.id} className="ps-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => onSelect(p.id)}>
-                  <div className="ps-card-bg" style={{ backgroundImage: `url(${p.splashLeft})` }}/>
-                  <div className="ps-card-content">
-                    <div className="ps-card-name">{p.name}</div>
-                    <div className="ps-card-role">{p.role.toUpperCase()} {"\u00B7"} #{p.tag}</div>
-                    <div className="ps-card-rank">{tierLabel}</div>
+          <div style={{maxWidth:'1100px',width:'90%'}}>
+            <div className="ps-grid" style={{maxWidth:'none',width:'100%'}}>
+              {PLAYERS.map((p, i) => {
+                const r = ranks[p.id];
+                const tierLabel = r ? `${r.tier} ${r.rank || ''} ${r.lp} LP` : 'Loading...';
+                return (
+                  <div key={p.id} className="ps-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => onSelect(p.id)}>
+                    <div className="ps-card-bg" style={{ backgroundImage: `url(${p.splashLeft})` }}/>
+                    <div className="ps-card-content">
+                      <div className="ps-card-name">{p.name}</div>
+                      <div className="ps-card-role">{p.role.toUpperCase()} {"\u00B7"} #{p.tag}</div>
+                      <div className="ps-card-rank">{tierLabel}</div>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
 
-          <div className="ps-compare" onClick={() => onSelect('compare')}>
+            <div className="ps-compare" onClick={() => onSelect('compare')}>
             <div className="ps-compare-title">CONFRONTO!!</div>
             <div className="ps-compare-sub">compara tutti i player side-by-side</div>
           </div>
