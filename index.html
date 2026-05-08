@@ -228,14 +228,20 @@ function useLiveData(puuid) {
 // ═══════════════════════════════════════════════════════════════
 // PROCESS DATA
 // ═══════════════════════════════════════════════════════════════
-function processData(raw) {
+const ROLE_MAP = { top:'TOP', jungle:'JUNGLE', mid:'MIDDLE', bot:'BOTTOM', support:'UTILITY' };
+
+function processData(raw, playerRole) {
   const rank = raw.rank;
   const currentAbs = rank ? absLP(rank.tier, rank.rank, rank.lp) : 0;
   const startAbs = absLP("EMERALD", "II", 0);
   const progressPct = Math.min(100, Math.max(0, (currentAbs - startAbs) / (MASTER_ABS - startAbs) * 100));
   const lpToMaster = Math.max(0, MASTER_ABS - currentAbs);
 
-  const matches = raw.matches || [];
+  const allMatches = raw.matches || [];
+  // Filter to main role for stats
+  const riotRole = ROLE_MAP[playerRole] || null;
+  const matches = riotRole ? allMatches.filter(m => m.role === riotRole) : allMatches;
+
   // Use season totals from API (all games, not just last 24)
   const seasonWins = rank ? rank.wins : 0;
   const seasonLosses = rank ? rank.losses : 0;
@@ -244,15 +250,15 @@ function processData(raw) {
   const totalWins = seasonWins;
   const totalGames = seasonGames;
 
-  // Streak
+  // Streak (from all matches, not role-filtered)
   let streakCount = 0;
-  const streakType = matches[0]?.result || 'W';
-  for (const m of matches) {
+  const streakType = allMatches[0]?.result || 'W';
+  for (const m of allMatches) {
     if (m.result === streakType) streakCount++;
     else break;
   }
 
-  // Champ stats
+  // Champ stats (main role only)
   const champMap = {};
   for (const m of matches) {
     if (!champMap[m.champ]) champMap[m.champ] = { name: m.champ, games: 0, wins: 0, k: 0, d: 0, a: 0, lp: 0 };
@@ -272,7 +278,7 @@ function processData(raw) {
 
   // Role stats
   const roleMap = {};
-  for (const m of matches) {
+  for (const m of allMatches) {
     const r = m.role || 'UNKNOWN';
     if (!roleMap[r]) roleMap[r] = { role: r, games: 0, wins: 0 };
     roleMap[r].games++;
@@ -302,11 +308,11 @@ function processData(raw) {
     milestones[milestones.length - 1].status = 'goal';
   }
 
-  const avgKDA = totalGames ? ((matches.reduce((s,m)=>s+m.kills,0) + matches.reduce((s,m)=>s+m.assists,0)) / Math.max(1, matches.reduce((s,m)=>s+m.deaths,0))).toFixed(2) : '0.00';
+  const avgKDA = matches.length ? ((matches.reduce((s,m)=>s+m.kills,0) + matches.reduce((s,m)=>s+m.assists,0)) / Math.max(1, matches.reduce((s,m)=>s+m.deaths,0))).toFixed(2) : '0.00';
 
   return {
     rank, currentAbs, startAbs, progressPct, lpToMaster,
-    matches, totalGames, totalWins, totalWR,
+    matches, allMatches, totalGames, totalWins, totalWR,
     streakCount, streakType, champStats, mvp, mainRole,
     milestones, avgKDA,
   };
@@ -811,7 +817,7 @@ function DSMilestones({palette,intensity,tiltAmt,d}){
 
 function DSChart({palette,intensity,d}){
   // Build LP curve from matches (oldest to newest)
-  const ordered=[...d.matches].reverse();
+  const ordered=[...(d.allMatches || d.matches)].reverse();
   const startAbs=absLP("EMERALD","II",62);
   // We don't have LP per match from API, so show rank progression
   const data=[{abs:startAbs,label:'Start'}];
@@ -1305,7 +1311,7 @@ function ComparisonView({ palette, intensity }) {
         const res = await fetch(`https://sproporzionato-api.amedeo-shogo.workers.dev/api/data?puuid=${p.puuid}`, { cache: 'no-store' });
         if (res.ok) {
           const json = await res.json();
-          return { id: p.id, raw: json, processed: processData(json) };
+          return { id: p.id, raw: json, processed: processData(json, p.role) };
         }
       } catch {}
       return { id: p.id, raw: null, processed: null };
@@ -1391,7 +1397,7 @@ function PlayerDashboard({ player, tweaks, setTweak }) {
 
   if (!raw) return <LoadingScreen/>;
 
-  const d = processData(raw);
+  const d = processData(raw, player.role);
 
   return (
     <>
@@ -1434,10 +1440,10 @@ function PlayerDashboard({ player, tweaks, setTweak }) {
       <MangaPanelDark intensity={intensity} halftone={halftone} style={{padding:'18px 20px',marginBottom:'24px'}}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'baseline',marginBottom:'12px'}}>
           <div style={{...dsBase.display,fontSize:'24px',color:D_LINE}}>BATTLE LOG <span style={{color:palette.primary,textShadow:`0 0 8px ${palette.primary}66`}}>// LIVE</span></div>
-          <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, d.matches.length)} partite</div>
+          <div style={{...dsBase.hand,fontSize:'15px',color:D_DIM}}>tap per espandere {"\u00B7"} {Math.min(t.matchCount, (d.allMatches||d.matches).length)} partite</div>
         </div>
         <div style={{display:'grid',gap:'8px'}}>
-          {d.matches.slice(0,t.matchCount).map((m,i)=>(
+          {(d.allMatches||d.matches).slice(0,t.matchCount).map((m,i)=>(
             <DSMatchCard key={m.matchId} m={m} idx={i} palette={palette} intensity={intensity} speedLines={speedLines} compact={compact}/>
           ))}
         </div>
