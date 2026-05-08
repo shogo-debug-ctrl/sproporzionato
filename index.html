@@ -1228,14 +1228,14 @@ const __SELECTOR_STYLE = `
   @keyframes psCardIn{from{transform:translateY(40px) scale(0.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
   .ps-title{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(36px,8vw,72px);color:#0a0810;-webkit-text-stroke:3px #f5f0e8;text-shadow:6px 6px 0 #ff2e5b,10px 10px 0 #f5f0e8,0 0 40px rgba(255,46,91,0.4);letter-spacing:0.04em;margin-bottom:12px;text-align:center}
   .ps-sub{font-family:"Permanent Marker","Caveat",cursive;font-size:22px;color:#ffd23a;margin-bottom:40px;text-align:center}
-  .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:1100px;width:90%;margin-bottom:24px}
+  .ps-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;max-width:1100px;width:90%;margin-bottom:24px}
   @media(max-width:900px){.ps-grid{grid-template-columns:repeat(2,1fr)}}
   @media(max-width:500px){.ps-grid{grid-template-columns:1fr}}
   .ps-card{position:relative;border:3px solid #f5f0e8;background:#15111c;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.3,1.6,.4,1),box-shadow .25s;box-shadow:4px 4px 0 #f5f0e8;min-height:220px;animation:psCardIn .4s ease-out both}
   .ps-card:hover{transform:scale(1.05) rotate(-1deg);box-shadow:4px 4px 0 #f5f0e8,0 0 30px rgba(255,210,58,0.3)}
   .ps-card-bg{position:absolute;inset:0;background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.4;filter:brightness(0.8)}
-  .ps-card-content{position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px}
-  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(16px,2vw,28px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.02em;line-height:1.1}
+  .ps-card-content{position:relative;z-index:1;padding:16px 12px;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px}
+  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(15px,1.8vw,26px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.02em;line-height:1.1;white-space:nowrap}
   .ps-card-rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:#7c7088;margin-top:6px;white-space:nowrap}
   .ps-card-role{font-family:"Permanent Marker","Caveat",cursive;font-size:14px;color:#ffd23a;margin-top:4px}
   .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px}
