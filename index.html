@@ -104,6 +104,7 @@ const PLAYERS = [
   {
     id: 'sproporzionato',
     name: 'SPROPORZIONATO!',
+    shortName: 'SPROPO!',
     tag: 'EUVU',
     puuid: 'Cw6nwb9CaamINcY-BcRfpYMHBWXijBj4lwcQdqWvUGXoTRjUViomuWLP4IzqAJxqTE5d5xUy2MyNOA',
     splashLeft: 'assets/gwen.png',
@@ -128,6 +129,7 @@ const PLAYERS = [
   {
     id: 'lee',
     name: 'LEE MORTACCI TUA!',
+    shortName: 'LEE M.T.!',
     tag: 'EUW',
     puuid: 'Hb-Xn77JUNKM-4-H5adKkX-hI9hdpO4-ict9RvfWpqXL8a0EA0Yz6zDXp03hTHUYX3ISKI96BVsltg',
     splashLeft: 'assets/viego.png',
@@ -1235,7 +1237,7 @@ const __SELECTOR_STYLE = `
   .ps-card:hover{transform:scale(1.05) rotate(-1deg);box-shadow:4px 4px 0 #f5f0e8,0 0 30px rgba(255,210,58,0.3)}
   .ps-card-bg{position:absolute;inset:0;background-size:contain;background-position:center center;background-repeat:no-repeat;opacity:0.4;filter:brightness(0.8)}
   .ps-card-content{position:relative;z-index:1;padding:20px 16px;display:flex;flex-direction:column;justify-content:flex-end;min-height:200px}
-  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(14px,1.8vw,24px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.02em;line-height:1.1}
+  .ps-card-name{font-family:"Bangers","Anton",Impact,sans-serif;font-size:clamp(13px,1.5vw,22px);color:#f5f0e8;text-shadow:2px 2px 0 #0a0810,0 0 12px rgba(255,210,58,0.5);letter-spacing:0.02em;line-height:1.05;overflow-wrap:break-word;hyphens:none}
   .ps-card-rank{font-family:"JetBrains Mono",monospace;font-size:12px;color:#7c7088;margin-top:6px}
   .ps-card-role{font-family:"Permanent Marker","Caveat",cursive;font-size:14px;color:#ffd23a;margin-top:4px}
   .ps-compare{border:3px dashed #ffd23a;background:rgba(255,210,58,0.05);cursor:pointer;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80px;transition:transform .25s,box-shadow .25s;margin-bottom:24px}
@@ -1281,7 +1283,7 @@ function PlayerSelector({ onSelect, visible, onClose }) {
                   <div key={p.id} className="ps-card" style={{ animationDelay: `${i * 0.08}s` }} onClick={() => onSelect(p.id)}>
                     <div className="ps-card-bg" style={{ backgroundImage: `url(${p.splashLeft})` }}/>
                     <div className="ps-card-content">
-                      <div className="ps-card-name">{p.name}</div>
+                      <div className="ps-card-name">{p.shortName || p.name}</div>
                       <div className="ps-card-role">{p.role.toUpperCase()} {"\u00B7"} #{p.tag}</div>
                       <div className="ps-card-rank">{tierLabel}</div>
                     </div>
