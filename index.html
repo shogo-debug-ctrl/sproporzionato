@@ -739,7 +739,7 @@ function DSStats2({palette,intensity,halftone,tiltAmt,d,playerRole}){
   const kdaNum = parseFloat(kdaVal);
 
   const stat2 = isSupport
-    ? { l: 'KDA', v: kdaVal, s: kdaNum >= 5.0 ? 'GODLIKE!!' : kdaNum >= 3.5 ? 'ottimo' : kdaNum >= 2.5 ? 'buono' : 'mediocre', c: kdaNum >= 5.0 ? palette.secondary : kdaNum >= 3.5 ? NEON_GREEN : kdaNum >= 2.5 ? palette.tertiary : palette.primary, t: 1 }
+    ? { l: 'KDA', v: kdaVal, s: kdaNum >= 4.0 ? 'GODLIKE!!' : kdaNum >= 3.0 ? 'buono' : 'mediocre', c: kdaNum >= 4.0 ? palette.secondary : kdaNum >= 3.0 ? palette.tertiary : palette.primary, t: 1 }
     : { l: 'DMG/MIN', v: dmgPerMin, s: parseInt(dmgPerMin) >= 1000 ? 'carry mode!!' : parseInt(dmgPerMin) >= 850 ? 'buono' : 'mediocre', c: parseInt(dmgPerMin) >= 1000 ? palette.secondary : parseInt(dmgPerMin) >= 850 ? palette.tertiary : palette.primary, t: 1 };
 
   const items = [
