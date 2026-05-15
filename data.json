@@ -10,11 +10,282 @@
     "rank": "II",
     "lp": 31,
     "wins": 169,
-    "losses": 151,
+    "losses": 152,
     "hotStreak": false,
     "veteran": false
   },
   "matches": [
+    {
+      "matchId": "EUW1_7854623570",
+      "gameCreation": 1778861445624,
+      "date": "2026-05-15T16:10:45.624Z",
+      "champ": "Nasus",
+      "result": "L",
+      "kills": 5,
+      "deaths": 8,
+      "assists": 5,
+      "cs": 289,
+      "duration": "41:59",
+      "durationSec": 2519,
+      "role": "TOP",
+      "visionScore": 31,
+      "damageDealt": 25656,
+      "goldEarned": 16211,
+      "teams": [
+        {
+          "teamId": 100,
+          "players": [
+            {
+              "name": "Belbarb",
+              "tag": "3582",
+              "champ": "Warwick",
+              "kills": 8,
+              "deaths": 7,
+              "assists": 10,
+              "cs": 325,
+              "role": "TOP",
+              "damageDealt": 34130,
+              "goldEarned": 17605,
+              "visionScore": 33,
+              "items": [
+                6333,
+                3748,
+                3009,
+                3087,
+                6672,
+                3050,
+                3340
+              ],
+              "level": 20,
+              "isTarget": false
+            },
+            {
+              "name": "One Punch Lee",
+              "tag": "0111",
+              "champ": "JarvanIV",
+              "kills": 13,
+              "deaths": 3,
+              "assists": 15,
+              "cs": 346,
+              "role": "JUNGLE",
+              "damageDealt": 31077,
+              "goldEarned": 21502,
+              "visionScore": 45,
+              "items": [
+                3111,
+                6610,
+                6698,
+                3110,
+                6333,
+                3071,
+                3364
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "devinwater",
+              "tag": "EUW",
+              "champ": "Taliyah",
+              "kills": 10,
+              "deaths": 6,
+              "assists": 19,
+              "cs": 350,
+              "role": "MIDDLE",
+              "damageDealt": 43688,
+              "goldEarned": 18655,
+              "visionScore": 40,
+              "items": [
+                3089,
+                3102,
+                3040,
+                3171,
+                3137,
+                4645,
+                3364
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "Schokoauto",
+              "tag": "EUW",
+              "champ": "Seraphine",
+              "kills": 8,
+              "deaths": 4,
+              "assists": 14,
+              "cs": 391,
+              "role": "BOTTOM",
+              "damageDealt": 38555,
+              "goldEarned": 22615,
+              "visionScore": 26,
+              "items": [
+                3089,
+                6653,
+                3165,
+                8010,
+                2503,
+                3040,
+                3363
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "Vespucci",
+              "tag": "NCA",
+              "champ": "Sona",
+              "kills": 0,
+              "deaths": 6,
+              "assists": 25,
+              "cs": 30,
+              "role": "UTILITY",
+              "damageDealt": 10459,
+              "goldEarned": 10995,
+              "visionScore": 125,
+              "items": [
+                6620,
+                3870,
+                2530,
+                3158,
+                6617,
+                3067,
+                3364
+              ],
+              "level": 18,
+              "isTarget": false
+            }
+          ],
+          "win": true
+        },
+        {
+          "teamId": 200,
+          "players": [
+            {
+              "name": "Sproporzionato",
+              "tag": "EUVU",
+              "champ": "Nasus",
+              "kills": 5,
+              "deaths": 8,
+              "assists": 5,
+              "cs": 289,
+              "role": "TOP",
+              "damageDealt": 25656,
+              "goldEarned": 16211,
+              "visionScore": 31,
+              "items": [
+                3097,
+                2512,
+                3158,
+                1011,
+                3110,
+                3065,
+                3364
+              ],
+              "level": 20,
+              "isTarget": true
+            },
+            {
+              "name": "TheHonoredOne",
+              "tag": "Geng",
+              "champ": "Aatrox",
+              "kills": 6,
+              "deaths": 8,
+              "assists": 8,
+              "cs": 283,
+              "role": "JUNGLE",
+              "damageDealt": 35758,
+              "goldEarned": 16557,
+              "visionScore": 31,
+              "items": [
+                3111,
+                6697,
+                6699,
+                3814,
+                6694,
+                3155,
+                3364
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "chris",
+              "tag": "III",
+              "champ": "Veigar",
+              "kills": 3,
+              "deaths": 15,
+              "assists": 4,
+              "cs": 319,
+              "role": "MIDDLE",
+              "damageDealt": 24886,
+              "goldEarned": 15444,
+              "visionScore": 27,
+              "items": [
+                3145,
+                3135,
+                3040,
+                3089,
+                6657,
+                3175,
+                3364
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "WLF",
+              "tag": "TOP",
+              "champ": "Ashe",
+              "kills": 12,
+              "deaths": 4,
+              "assists": 5,
+              "cs": 350,
+              "role": "BOTTOM",
+              "damageDealt": 35378,
+              "goldEarned": 24005,
+              "visionScore": 30,
+              "items": [
+                3033,
+                3072,
+                2523,
+                3026,
+                3046,
+                3031,
+                3363
+              ],
+              "level": 18,
+              "isTarget": false
+            },
+            {
+              "name": "CallMeJaxx",
+              "tag": "Jaxxx",
+              "champ": "Milio",
+              "kills": 0,
+              "deaths": 4,
+              "assists": 19,
+              "cs": 20,
+              "role": "UTILITY",
+              "damageDealt": 5574,
+              "goldEarned": 11673,
+              "visionScore": 102,
+              "items": [
+                3870,
+                3222,
+                3107,
+                3158,
+                6620,
+                6617,
+                3364
+              ],
+              "level": 17,
+              "isTarget": false
+            }
+          ],
+          "win": false
+        }
+      ]
+    },
     {
       "matchId": "EUW1_7854578763",
       "gameCreation": 1778859176134,
@@ -7873,279 +8144,8 @@
           "win": false
         }
       ]
-    },
-    {
-      "matchId": "EUW1_7851403091",
-      "gameCreation": 1778613291996,
-      "date": "2026-05-12T19:14:51.996Z",
-      "champ": "Naafiri",
-      "result": "W",
-      "kills": 18,
-      "deaths": 3,
-      "assists": 6,
-      "cs": 201,
-      "duration": "23:53",
-      "durationSec": 1433,
-      "role": "TOP",
-      "visionScore": 18,
-      "damageDealt": 38492,
-      "goldEarned": 15815,
-      "teams": [
-        {
-          "teamId": 100,
-          "players": [
-            {
-              "name": "Sproporzionato",
-              "tag": "EUVU",
-              "champ": "Naafiri",
-              "kills": 18,
-              "deaths": 3,
-              "assists": 6,
-              "cs": 201,
-              "role": "TOP",
-              "damageDealt": 38492,
-              "goldEarned": 15815,
-              "visionScore": 18,
-              "items": [
-                3123,
-                6694,
-                6697,
-                3008,
-                6699,
-                3814,
-                3364
-              ],
-              "level": 16,
-              "isTarget": true
-            },
-            {
-              "name": "PumpkinEkko",
-              "tag": "EUW",
-              "champ": "Nunu",
-              "kills": 5,
-              "deaths": 6,
-              "assists": 10,
-              "cs": 141,
-              "role": "JUNGLE",
-              "damageDealt": 14795,
-              "goldEarned": 10324,
-              "visionScore": 8,
-              "items": [
-                3065,
-                2031,
-                6653,
-                3111,
-                1011,
-                1082,
-                3364
-              ],
-              "level": 13,
-              "isTarget": false
-            },
-            {
-              "name": "Hooger",
-              "tag": "EUW",
-              "champ": "Annie",
-              "kills": 7,
-              "deaths": 8,
-              "assists": 12,
-              "cs": 142,
-              "role": "MIDDLE",
-              "damageDealt": 23126,
-              "goldEarned": 9621,
-              "visionScore": 23,
-              "items": [
-                4646,
-                1082,
-                3118,
-                3175,
-                1056,
-                3145,
-                3340
-              ],
-              "level": 14,
-              "isTarget": false
-            },
-            {
-              "name": "Win my name",
-              "tag": "EUW",
-              "champ": "Ezreal",
-              "kills": 2,
-              "deaths": 3,
-              "assists": 8,
-              "cs": 138,
-              "role": "BOTTOM",
-              "damageDealt": 16597,
-              "goldEarned": 9043,
-              "visionScore": 14,
-              "items": [
-                1055,
-                3078,
-                3042,
-                0,
-                0,
-                0,
-                3363
-              ],
-              "level": 13,
-              "isTarget": false
-            },
-            {
-              "name": "Mochi",
-              "tag": "TQM",
-              "champ": "Taric",
-              "kills": 2,
-              "deaths": 8,
-              "assists": 17,
-              "cs": 38,
-              "role": "UTILITY",
-              "damageDealt": 6691,
-              "goldEarned": 7693,
-              "visionScore": 43,
-              "items": [
-                3870,
-                3109,
-                3121,
-                3111,
-                1006,
-                0,
-                3364
-              ],
-              "level": 12,
-              "isTarget": false
-            }
-          ],
-          "win": true
-        },
-        {
-          "teamId": 200,
-          "players": [
-            {
-              "name": "FlyAtYou",
-              "tag": "EUW",
-              "champ": "Belveth",
-              "kills": 1,
-              "deaths": 9,
-              "assists": 2,
-              "cs": 163,
-              "role": "TOP",
-              "damageDealt": 10203,
-              "goldEarned": 8177,
-              "visionScore": 12,
-              "items": [
-                3074,
-                1086,
-                3006,
-                6676,
-                0,
-                0,
-                3340
-              ],
-              "level": 14,
-              "isTarget": false
-            },
-            {
-              "name": "CHCEZJESCCIPKE",
-              "tag": "PYCHA",
-              "champ": "LeeSin",
-              "kills": 5,
-              "deaths": 7,
-              "assists": 10,
-              "cs": 135,
-              "role": "JUNGLE",
-              "damageDealt": 15402,
-              "goldEarned": 9982,
-              "visionScore": 27,
-              "items": [
-                3067,
-                2055,
-                1036,
-                3047,
-                6692,
-                6610,
-                3340
-              ],
-              "level": 13,
-              "isTarget": false
-            },
-            {
-              "name": "ó dheas",
-              "tag": "EUW",
-              "champ": "Sylas",
-              "kills": 9,
-              "deaths": 7,
-              "assists": 7,
-              "cs": 167,
-              "role": "MIDDLE",
-              "damageDealt": 21307,
-              "goldEarned": 11410,
-              "visionScore": 12,
-              "items": [
-                3157,
-                4633,
-                3152,
-                3173,
-                1056,
-                0,
-                3364
-              ],
-              "level": 14,
-              "isTarget": false
-            },
-            {
-              "name": "Leon",
-              "tag": "Dawg",
-              "champ": "Brand",
-              "kills": 9,
-              "deaths": 5,
-              "assists": 9,
-              "cs": 211,
-              "role": "BOTTOM",
-              "damageDealt": 31114,
-              "goldEarned": 12863,
-              "visionScore": 10,
-              "items": [
-                1056,
-                2421,
-                6653,
-                3116,
-                2503,
-                1058,
-                3363
-              ],
-              "level": 14,
-              "isTarget": false
-            },
-            {
-              "name": "LegendOfD",
-              "tag": "EUW",
-              "champ": "Nami",
-              "kills": 4,
-              "deaths": 6,
-              "assists": 17,
-              "cs": 20,
-              "role": "UTILITY",
-              "damageDealt": 9668,
-              "goldEarned": 7971,
-              "visionScore": 50,
-              "items": [
-                3158,
-                3876,
-                4005,
-                6617,
-                3108,
-                3916,
-                3364
-              ],
-              "level": 12,
-              "isTarget": false
-            }
-          ],
-          "win": false
-        }
-      ]
     }
   ],
-  "updatedAt": "2026-05-15T16:30:14.118Z",
+  "updatedAt": "2026-05-15T20:41:46.564Z",
   "matchCount": 30
 }
