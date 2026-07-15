@@ -8,7 +8,7 @@
   "rank": {
     "tier": "DIAMOND",
     "rank": "I",
-    "lp": 75,
+    "lp": 25,
     "wins": 189,
     "losses": 166,
     "hotStreak": false,
@@ -6791,6 +6791,6 @@
       ]
     }
   ],
-  "updatedAt": "2026-07-15T21:59:08.522Z",
+  "updatedAt": "2026-07-15T23:01:30.906Z",
   "matchCount": 25
 }
