@@ -2184,6 +2184,277 @@
       ]
     },
     {
+      "matchId": "EUW1_7869453686",
+      "gameCreation": 1780051971487,
+      "date": "2026-05-29T10:52:51.487Z",
+      "champ": "Gnar",
+      "result": "L",
+      "kills": 1,
+      "deaths": 4,
+      "assists": 0,
+      "cs": 134,
+      "duration": "18:27",
+      "durationSec": 1107,
+      "role": "TOP",
+      "visionScore": 14,
+      "damageDealt": 16126,
+      "goldEarned": 5740,
+      "teams": [
+        {
+          "teamId": 100,
+          "players": [
+            {
+              "name": "Sproporzionato",
+              "tag": "EUVU",
+              "champ": "Gnar",
+              "kills": 1,
+              "deaths": 4,
+              "assists": 0,
+              "cs": 134,
+              "role": "TOP",
+              "damageDealt": 16126,
+              "goldEarned": 5740,
+              "visionScore": 14,
+              "items": [
+                1055,
+                2031,
+                3078,
+                3067,
+                1001,
+                1028,
+                3340
+              ],
+              "level": 12,
+              "isTarget": true
+            },
+            {
+              "name": "Stormblessed",
+              "tag": "PORO",
+              "champ": "MonkeyKing",
+              "kills": 0,
+              "deaths": 3,
+              "assists": 2,
+              "cs": 135,
+              "role": "JUNGLE",
+              "damageDealt": 3022,
+              "goldEarned": 6499,
+              "visionScore": 16,
+              "items": [
+                3111,
+                3078,
+                3155,
+                0,
+                0,
+                0,
+                3513
+              ],
+              "level": 11,
+              "isTarget": false
+            },
+            {
+              "name": "kikomikodiko",
+              "tag": "EUW",
+              "champ": "Yasuo",
+              "kills": 1,
+              "deaths": 3,
+              "assists": 0,
+              "cs": 136,
+              "role": "MIDDLE",
+              "damageDealt": 3448,
+              "goldEarned": 6043,
+              "visionScore": 8,
+              "items": [
+                1054,
+                3153,
+                1018,
+                1036,
+                0,
+                3173,
+                3340
+              ],
+              "level": 11,
+              "isTarget": false
+            },
+            {
+              "name": "ministr financi",
+              "tag": "dejmi",
+              "champ": "Vladimir",
+              "kills": 1,
+              "deaths": 4,
+              "assists": 0,
+              "cs": 168,
+              "role": "BOTTOM",
+              "damageDealt": 9839,
+              "goldEarned": 6960,
+              "visionScore": 11,
+              "items": [
+                1056,
+                3152,
+                3108,
+                1082,
+                3147,
+                0,
+                3340
+              ],
+              "level": 11,
+              "isTarget": false
+            },
+            {
+              "name": "blind",
+              "tag": "9292",
+              "champ": "Alistar",
+              "kills": 0,
+              "deaths": 8,
+              "assists": 1,
+              "cs": 22,
+              "role": "UTILITY",
+              "damageDealt": 2492,
+              "goldEarned": 4312,
+              "visionScore": 39,
+              "items": [
+                3869,
+                3009,
+                3190,
+                0,
+                0,
+                0,
+                3364
+              ],
+              "level": 7,
+              "isTarget": false
+            }
+          ],
+          "win": false
+        },
+        {
+          "teamId": 200,
+          "players": [
+            {
+              "name": "Bdog",
+              "tag": "Japan",
+              "champ": "Renekton",
+              "kills": 2,
+              "deaths": 1,
+              "assists": 3,
+              "cs": 119,
+              "role": "TOP",
+              "damageDealt": 9169,
+              "goldEarned": 6554,
+              "visionScore": 19,
+              "items": [
+                1054,
+                3133,
+                3047,
+                2019,
+                3076,
+                0,
+                3340
+              ],
+              "level": 13,
+              "isTarget": false
+            },
+            {
+              "name": "Detro",
+              "tag": "SIUUU",
+              "champ": "Nunu",
+              "kills": 1,
+              "deaths": 0,
+              "assists": 14,
+              "cs": 123,
+              "role": "JUNGLE",
+              "damageDealt": 8235,
+              "goldEarned": 6949,
+              "visionScore": 13,
+              "items": [
+                3076,
+                6653,
+                1001,
+                1031,
+                0,
+                3066,
+                3340
+              ],
+              "level": 12,
+              "isTarget": false
+            },
+            {
+              "name": "if u can",
+              "tag": "0007",
+              "champ": "Anivia",
+              "kills": 6,
+              "deaths": 1,
+              "assists": 3,
+              "cs": 156,
+              "role": "MIDDLE",
+              "damageDealt": 10615,
+              "goldEarned": 8377,
+              "visionScore": 8,
+              "items": [
+                2003,
+                6657,
+                3003,
+                1052,
+                1056,
+                1001,
+                3340
+              ],
+              "level": 13,
+              "isTarget": false
+            },
+            {
+              "name": "DragoiS",
+              "tag": "EUW",
+              "champ": "Zeri",
+              "kills": 9,
+              "deaths": 0,
+              "assists": 3,
+              "cs": 181,
+              "role": "BOTTOM",
+              "damageDealt": 14092,
+              "goldEarned": 9857,
+              "visionScore": 9,
+              "items": [
+                1086,
+                3097,
+                3085,
+                3035,
+                1018,
+                0,
+                3363
+              ],
+              "level": 13,
+              "isTarget": false
+            },
+            {
+              "name": "Culoncin",
+              "tag": "Sh3ry",
+              "champ": "Taliyah",
+              "kills": 4,
+              "deaths": 1,
+              "assists": 12,
+              "cs": 25,
+              "role": "UTILITY",
+              "damageDealt": 11274,
+              "goldEarned": 6801,
+              "visionScore": 30,
+              "items": [
+                3876,
+                2422,
+                4005,
+                3116,
+                0,
+                2022,
+                3364
+              ],
+              "level": 10,
+              "isTarget": false
+            }
+          ],
+          "win": true
+        }
+      ]
+    },
+    {
       "matchId": "EUW1_7869434549",
       "gameCreation": 1780049929684,
       "date": "2026-05-29T10:18:49.684Z",
@@ -6520,6 +6791,6 @@
       ]
     }
   ],
-  "updatedAt": "2026-09-09T20:00:57.779Z",
-  "matchCount": 24
+  "updatedAt": "2026-09-09T22:29:37.016Z",
+  "matchCount": 25
 }
